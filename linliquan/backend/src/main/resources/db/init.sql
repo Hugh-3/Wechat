@@ -128,3 +128,133 @@ COMMENT ON TABLE users IS '用户表';
 COMMENT ON COLUMN users.verification_status IS '认证状态：0-未认证(UNAUTH), 1-认证中(PENDING), 2-已认证(VERIFIED)';
 COMMENT ON COLUMN posts.location IS 'PostGIS地理坐标点，SRID=4326';
 COMMENT ON COLUMN orders.location IS '互助任务位置坐标，SRID=4326';
+
+-- ==========================================
+-- 测试数据（开发环境使用）
+-- ==========================================
+
+-- 测试用户
+INSERT INTO users (phone_hash, phone_encrypted, nickname, avatar_url, verification_status, created_at, updated_at) VALUES
+('a665a45920422f9d417e4867efdc4fb8', 'encrypted_phone_1', '未认证用户', 'https://example.com/avatar1.png', 0, NOW(), NOW()),
+('a665a45920422f9d417e4867efdc4fb9', 'encrypted_phone_2', '认证中用户', 'https://example.com/avatar2.png', 1, NOW(), NOW()),
+('a665a45920422f9d417e4867efdc4fb0', 'encrypted_phone_3', '已认证业主A', 'https://example.com/avatar3.png', 2, NOW(), NOW()),
+('a665a45920422f9d417e4867efdc4fb1', 'encrypted_phone_4', '已认证业主B', 'https://example.com/avatar4.png', 2, NOW(), NOW());
+
+-- 测试帖子
+INSERT INTO posts (user_id, post_type, title, content, location, like_count, comment_count, view_count, status, created_at, updated_at) VALUES
+(3, 1, '欢迎来到邻里圈', '这是我们社区的信息广场，欢迎大家分享生活点滴！', ST_SetSRID(ST_MakePoint(116.4074, 39.9042), 4326)::geography, 10, 5, 100, 1, NOW(), NOW()),
+(3, 2, '寻求帮助：帮忙取快递', '有谁能帮忙取个快递吗？酬金10元', ST_SetSRID(ST_MakePoint(116.4074, 39.9042), 4326)::geography, 5, 2, 50, 1, NOW(), NOW()),
+(4, 1, '周末跳蚤市场', '本周六小区广场有跳蚤市场，欢迎参加', ST_SetSRID(ST_MakePoint(116.4080, 39.9050), 4326)::geography, 20, 8, 200, 1, NOW(), NOW()),
+(4, 2, '拼单买新鲜水果', '超市水果打折，附近的一起来拼单吧', ST_SetSRID(ST_MakePoint(116.4060, 39.9040), 4326)::geography, 3, 1, 30, 1, NOW(), NOW());
+
+-- 测试互助任务
+INSERT INTO orders (post_id, user_id, help_type, reward_amount, location, status, created_at, updated_at) VALUES
+(2, 3, 2, 10.00, ST_SetSRID(ST_MakePoint(116.4074, 39.9042), 4326)::geography, 1, NOW(), NOW()),
+(4, 4, 1, 0.00, ST_SetSRID(ST_MakePoint(116.4060, 39.9040), 4326)::geography, 1, NOW(), NOW());
+
+-- ==========================================
+-- 视图定义
+-- ==========================================
+
+-- 帖子列表视图（关联用户信息）
+CREATE OR REPLACE VIEW v_posts_with_user AS
+SELECT
+    p.id,
+    p.user_id,
+    p.post_type,
+    p.title,
+    p.content,
+    p.like_count,
+    p.comment_count,
+    p.view_count,
+    p.status,
+    p.created_at,
+    u.nickname AS user_name,
+    u.avatar_url AS user_avatar,
+    u.verification_status AS user_verification_status
+FROM posts p
+INNER JOIN users u ON p.user_id = u.id;
+
+-- 附近互助任务视图
+CREATE OR REPLACE VIEW v_nearby_orders AS
+SELECT
+    o.id,
+    o.post_id,
+    o.user_id,
+    o.helper_user_id,
+    o.help_type,
+    o.reward_amount,
+    o.status,
+    o.created_at,
+    p.title,
+    p.content,
+    u.nickname AS user_name,
+    u.avatar_url AS user_avatar,
+    h.nickname AS helper_name,
+    ST_Distance(o.location, ST_SetSRID(ST_MakePoint(116.4074, 39.9042), 4326)::geography) AS distance_meters
+FROM orders o
+INNER JOIN posts p ON o.post_id = p.id
+INNER JOIN users u ON o.user_id = u.id
+LEFT JOIN users h ON o.helper_user_id = h.id;
+
+-- ==========================================
+-- 存储过程
+-- ==========================================
+
+-- 更新帖子点赞数
+CREATE OR REPLACE FUNCTION update_post_like_count(post_id BIGINT, increment_val INT DEFAULT 1)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE posts
+    SET like_count = like_count + increment_val,
+        updated_at = NOW()
+    WHERE id = post_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 获取用户认证统计
+CREATE OR REPLACE FUNCTION get_verification_stats()
+RETURNS TABLE(
+    unauth_count BIGINT,
+    pending_count BIGINT,
+    verified_count BIGINT,
+    total_count BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        COUNT(*) FILTER (WHERE verification_status = 0) AS unauth_count,
+        COUNT(*) FILTER (WHERE verification_status = 1) AS pending_count,
+        COUNT(*) FILTER (WHERE verification_status = 2) AS verified_count,
+        COUNT(*) AS total_count
+    FROM users;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==========================================
+-- 触发器
+-- ==========================================
+
+-- 自动更新updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_posts_updated_at
+    BEFORE UPDATE ON posts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_orders_updated_at
+    BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
