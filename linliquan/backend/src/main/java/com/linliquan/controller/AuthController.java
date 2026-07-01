@@ -3,26 +3,28 @@ package com.linliquan.controller;
 import com.linliquan.common.Result;
 import com.linliquan.model.entity.User;
 import com.linliquan.model.enums.VerificationStatus;
+import com.linliquan.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 认证状态控制器
- * 用于前端Mock演示三种认证状态下的UI差异
- */
 @RestController
 @RequestMapping("/v1/auth")
 public class AuthController {
 
-    /**
-     * 模拟用户登录，返回不同认证状态
-     * 用于前端开发时切换用户状态
-     */
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public Result<Map<String, Object>> login(@RequestParam String phone) {
+        return authService.login(phone);
+    }
+
     @PostMapping("/login-mock")
     public Result<Map<String, Object>> loginMock(@RequestParam(defaultValue = "0") int statusType) {
-        // statusType: 0=UNAUTH, 1=PENDING, 2=VERIFIED
         VerificationStatus status = VerificationStatus.fromCode(statusType);
 
         Map<String, Object> user = new HashMap<>();
@@ -39,17 +41,32 @@ public class AuthController {
         return Result.success(result);
     }
 
-    /**
-     * 获取当前用户认证状态
-     */
+    @PostMapping("/apply-verification")
+    public Result<Void> applyVerification(HttpServletRequest request, @RequestBody Map<String, Object> params) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            return Result.fail(ResultCode.UNAUTHORIZED);
+        }
+
+        String idCard = (String) params.get("idCard");
+        String houseNumber = (String) params.get("houseNumber");
+        String certificateUrl = (String) params.get("certificateUrl");
+
+        return authService.applyVerification(currentUser.getId(), idCard, houseNumber, certificateUrl);
+    }
+
     @GetMapping("/status")
-    public Result<Map<String, Object>> getStatus() {
-        // 实际从Session/Token中获取
+    public Result<Map<String, Object>> getStatus(HttpServletRequest request) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser != null) {
+            return authService.getUserStatus(currentUser.getId());
+        }
+
         Map<String, Object> status = new HashMap<>();
-        status.put("verificationStatus", VerificationStatus.VERIFIED.getCode());
-        status.put("description", VerificationStatus.VERIFIED.getDescription());
-        status.put("canWrite", VerificationStatus.VERIFIED.canWrite());
-        status.put("canRead", VerificationStatus.VERIFIED.canRead());
+        status.put("verificationStatus", VerificationStatus.UNAUTH.getCode());
+        status.put("description", VerificationStatus.UNAUTH.getDescription());
+        status.put("canWrite", VerificationStatus.UNAUTH.canWrite());
+        status.put("canRead", VerificationStatus.UNAUTH.canRead());
         return Result.success(status);
     }
 }

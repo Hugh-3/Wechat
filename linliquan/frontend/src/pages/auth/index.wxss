@@ -1,0 +1,168 @@
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 40rpx 30rpx;
+}
+
+.step-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 60rpx;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-dot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.step-item.active .step-dot {
+  background: #07c160;
+  color: #fff;
+}
+
+.step-item.done .step-dot {
+  background: #07c160;
+  color: #fff;
+}
+
+.step-text {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+.step-item.active .step-text {
+  color: #07c160;
+  font-weight: bold;
+}
+
+.step-line {
+  width: 100rpx;
+  height: 4rpx;
+  background: #e0e0e0;
+  margin: 0 20rpx;
+}
+
+.step-line.active {
+  background: #07c160;
+}
+
+.form-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 12rpx;
+}
+
+.section-title .icon {
+  margin-right: 8rpx;
+}
+
+.section-desc {
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.form-input {
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 28rpx;
+  border: 1rpx solid #eee;
+}
+
+.agreement {
+  margin-bottom: 40rpx;
+}
+
+.agreement .text-muted {
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.tips {
+  background: #f8fff9;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.tip-item:last-child {
+  margin-bottom: 0;
+}
+
+.tip-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.tip-item text:last-child {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.btn-primary {
+  width: 100%;
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  padding: 28rpx 0;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.btn-primary.btn-disabled {
+  background: #ccc;
+  color: #999;
+}
+
+.btn-secondary {
+  width: 100%;
+  background: #f5f5f5;
+  color: #666;
+  border-radius: 40rpx;
+  padding: 28rpx 0;
+  font-size: 32rpx;
+}

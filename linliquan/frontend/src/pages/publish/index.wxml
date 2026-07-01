@@ -1,0 +1,101 @@
+<view class="container">
+  <view class="type-switch">
+    <view 
+      class="type-item {{postType === 1 ? 'active' : ''}}" 
+      bindtap="onPostTypeChange" 
+      data-type="1"
+    >
+      信息广场
+    </view>
+    <view 
+      class="type-item {{postType === 2 ? 'active' : ''}}" 
+      bindtap="onPostTypeChange" 
+      data-type="2"
+    >
+      邻里互助
+    </view>
+  </view>
+
+  <view class="form-section">
+    <view class="form-item">
+      <text class="form-label">标题</text>
+      <input 
+        class="form-input" 
+        placeholder="请输入标题（至少5个字符）"
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="100"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">内容</text>
+      <textarea 
+        class="form-textarea" 
+        placeholder="请输入内容（至少10个字符）"
+        value="{{content}}"
+        bindinput="onContentInput"
+        maxlength="2000"
+      />
+      <text class="word-count">{{content.length}}/2000</text>
+    </view>
+
+    <view class="form-item" wx:if="{{postType === 2}}">
+      <text class="form-label">互助类型</text>
+      <view class="type-options">
+        <view 
+          wx:for="{{helpTypes}}" 
+          wx:key="id"
+          class="type-option {{helpType === item.id ? 'active' : ''}}"
+          bindtap="onHelpTypeChange"
+          data-id="{{item.id}}"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item" wx:if="{{postType === 2}}">
+      <text class="form-label">酬劳金额</text>
+      <view class="price-input">
+        <text class="price-symbol">¥</text>
+        <input 
+          class="form-input price" 
+          placeholder="0"
+          type="digit"
+          value="{{rewardAmount}}"
+          bindinput="onRewardInput"
+        />
+        <text class="price-hint">0表示免费/AA</text>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">图片</text>
+      <view class="image-upload">
+        <view class="upload-btn" bindtap="chooseImage" wx:if="{{images.length < 9}}">
+          <text class="upload-icon">+</text>
+        </view>
+        <view 
+          wx:for="{{images}}" 
+          wx:key="index" 
+          class="uploaded-image"
+        >
+          <image src="{{item}}" mode="aspectFill" />
+          <view class="delete-icon" bindtap="removeImage" data-index="{{index}}">×</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="location-info" wx:if="{{latitude && longitude}}">
+      <text class="location-icon">📍</text>
+      <text>已获取位置信息</text>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="btn-submit" bindtap="submitPost" loading="{{submitting}}">
+      发布
+    </button>
+  </view>
+</view>
