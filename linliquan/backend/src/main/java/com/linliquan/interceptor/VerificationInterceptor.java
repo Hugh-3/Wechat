@@ -1,20 +1,18 @@
 package com.linliquan.interceptor;
 
 import com.linliquan.model.entity.User;
-import com.linliquan.model.enums.VerificationStatus;
 import com.linliquan.common.Result;
 import com.linliquan.common.ResultCode;
 import com.linliquan.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.springframework.web.servlet.HandlerInterceptor;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class VerificationInterceptor implements Filter {
+public class VerificationInterceptor implements HandlerInterceptor {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -22,31 +20,29 @@ public class VerificationInterceptor implements Filter {
     private AuthService authService;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-        String token = httpRequest.getHeader("Authorization");
+        String token = request.getHeader("Authorization");
         User currentUser = null;
 
         if (token != null && token.startsWith("Bearer ")) {
             currentUser = authService.getUserByToken(token.substring(7));
         }
 
-        httpRequest.setAttribute("currentUser", currentUser);
+        request.setAttribute("currentUser", currentUser);
 
-        String path = httpRequest.getRequestURI();
+        String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        if (requiresVerification(path, httpRequest.getMethod())) {
+        if (requiresVerification(path, method)) {
             if (!checkVerificationStatus(currentUser)) {
-                sendForbiddenResponse(httpResponse, currentUser);
-                return;
+                sendForbiddenResponse(response, currentUser);
+                return false;
             }
         }
 
-        chain.doFilter(request, response);
+        return true;
     }
 
     private boolean requiresVerification(String path, String method) {
@@ -62,12 +58,6 @@ public class VerificationInterceptor implements Filter {
             if (path.startsWith("/api/v1/orders")) {
                 return true;
             }
-            if (path.startsWith("/api/v1/messages")) {
-                return true;
-            }
-            if (path.startsWith("/api/v1/activities")) {
-                return true;
-            }
         }
         return false;
     }
@@ -79,7 +69,7 @@ public class VerificationInterceptor implements Filter {
         return user.isVerified();
     }
 
-    private void sendForbiddenResponse(HttpServletResponse response, User user) throws IOException {
+    private void sendForbiddenResponse(HttpServletResponse response, User user) throws Exception {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
 

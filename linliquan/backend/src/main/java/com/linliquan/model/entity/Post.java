@@ -2,14 +2,13 @@ package com.linliquan.model.entity;
 
 import lombok.Data;
 import org.locationtech.jts.geom.Point;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 帖子实体（信息广场 + 邻里互助）
- */
 @Data
 @Entity
 @Table(name = "posts", indexes = {
@@ -26,31 +25,18 @@ public class Post {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    /**
-     * 帖子类型：1-信息广场, 2-邻里互助
-     */
     private Integer postType;
 
     private String title;
 
     private String content;
 
-    /**
-     * 图片URL列表
-     */
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "images", columnDefinition = "text[]")
     private List<String> images;
 
-    /**
-     * 纬度（用于距离计算）
-     */
-    @Column(name = "latitude")
-    private Double latitude;
-
-    /**
-     * 经度（用于距离计算）
-     */
-    @Column(name = "longitude")
-    private Double longitude;
+    @Column(name = "location", columnDefinition = "geography(Point,4326)")
+    private Point location;
 
     private Integer likeCount;
 
@@ -58,9 +44,6 @@ public class Post {
 
     private Integer viewCount;
 
-    /**
-     * 状态：1-正常, 2-已删除, 3-被屏蔽
-     */
     @Column(name = "status", nullable = false)
     private Integer status;
 
@@ -70,9 +53,15 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // 以下为关联查询字段
+    @Transient
     private String userName;
+
+    @Transient
     private String userAvatar;
-    private String distance;  // 格式化距离字符串
-    private Double distanceMeters;  // 距离（米）
+
+    @Transient
+    private String distance;
+
+    @Transient
+    private Double distanceMeters;
 }

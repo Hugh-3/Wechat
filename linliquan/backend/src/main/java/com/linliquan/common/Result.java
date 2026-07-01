@@ -5,6 +5,7 @@ package com.linliquan.common;
  */
 public class Result<T> {
 
+    private boolean success;
     private int code;
     private String message;
     private T data;
@@ -15,6 +16,7 @@ public class Result<T> {
     }
 
     public Result(int code, String message, T data) {
+        this.success = (code == ResultCode.SUCCESS.getCode());
         this.code = code;
         this.message = message;
         this.data = data;
@@ -37,12 +39,21 @@ public class Result<T> {
         return new Result<>(code, message, null);
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
     public int getCode() {
         return code;
     }
 
     public void setCode(int code) {
         this.code = code;
+        this.success = (code == ResultCode.SUCCESS.getCode());
     }
 
     public String getMessage() {

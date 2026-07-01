@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Coordinate;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -110,8 +110,7 @@ public class PostService {
         post.setTitle(title.trim());
         post.setContent(content.trim());
         post.setImages((java.util.List<String>) params.get("images"));
-        post.setLatitude(lat);
-        post.setLongitude(lng);
+        post.setLocation(location);
         post.setLikeCount(0);
         post.setCommentCount(0);
         post.setViewCount(0);

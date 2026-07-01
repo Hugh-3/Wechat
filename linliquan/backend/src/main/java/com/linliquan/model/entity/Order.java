@@ -3,13 +3,10 @@ package com.linliquan.model.entity;
 import lombok.Data;
 import org.locationtech.jts.geom.Point;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 互助任务实体
- */
 @Data
 @Entity
 @Table(name = "orders", indexes = {
@@ -29,33 +26,18 @@ public class Order {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    /**
-     * 接单者ID
-     */
     private Long helperUserId;
 
-    /**
-     * 互助类型：1-拼单团购, 2-代取代买, 3-生活求助, 4-技能交换
-     */
     private Integer helpType;
 
-    /**
-     * 酬劳金额（0表示免费/AA）
-     */
     private BigDecimal rewardAmount;
 
-    private Double latitude;
+    @Column(name = "location", columnDefinition = "geography(Point,4326)", nullable = false)
+    private Point location;
 
-    private Double longitude;
-
-    /**
-     * 距离（米）
-     */
+    @Transient
     private Double distanceMeters;
 
-    /**
-     * 状态：1-待接单, 2-进行中, 3-已完成, 4-已取消
-     */
     @Column(name = "status", nullable = false)
     private Integer status;
 
@@ -65,10 +47,18 @@ public class Order {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // 关联字段
+    @Transient
     private String title;
+
+    @Transient
     private String content;
+
+    @Transient
     private String userName;
+
+    @Transient
     private String userAvatar;
+
+    @Transient
     private String helperUserName;
 }

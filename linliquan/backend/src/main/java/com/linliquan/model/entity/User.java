@@ -3,7 +3,7 @@ package com.linliquan.model.entity;
 import com.linliquan.model.enums.VerificationStatus;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**

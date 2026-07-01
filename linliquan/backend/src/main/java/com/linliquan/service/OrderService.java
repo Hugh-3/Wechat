@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,8 +81,6 @@ public class OrderService {
         order.setUserId(user.getId());
         order.setHelpType(helpType);
         order.setRewardAmount(rewardAmount);
-        order.setLatitude(lat);
-        order.setLongitude(lng);
         order.setStatus(1); // 待接单
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());

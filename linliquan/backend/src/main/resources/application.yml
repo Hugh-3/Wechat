@@ -6,7 +6,7 @@ spring:
 
   # PostgreSQL + PostGIS配置
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/linliquan?useUnicode=true&characterEncoding=utf8&useSSL=false
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:linliquan}?useUnicode=true&characterEncoding=utf8&useSSL=false
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
