@@ -1,12 +1,15 @@
 /**
  * 邻里圈小程序 - HTTP请求封装
- * 支持：Token自动注入、响应拦截、错误处理、权限引导
+ * 支持：多环境切换、Token自动注入、响应拦截、错误处理、权限引导、Mock模式
  */
 
-// API基础地址
-const API_BASE_URL = 'http://localhost:8080/api';
+const envConfig = require('./env.js');
+const mockData = require('../mock/data.js');
 
-// 请求配置
+function getApiBaseUrl() {
+  return envConfig.getApiBaseUrl();
+}
+
 const DEFAULT_CONFIG = {
   timeout: 30000,
   showLoading: true,
@@ -27,8 +30,13 @@ function request(url, options = {}) {
   const token = wx.getStorageSync('accessToken');
   const currentRequestId = ++requestIndex;
 
+  if (envConfig.isMockMode()) {
+    return mockRequest(url, config);
+  }
+
+  const baseUrl = getApiBaseUrl();
+
   return new Promise((resolve, reject) => {
-    // 显示加载提示
     if (config.showLoading !== false) {
       wx.showLoading({
         title: config.loadingText || '加载中...',
@@ -36,8 +44,12 @@ function request(url, options = {}) {
       });
     }
 
+    if (envConfig.isDebug()) {
+      console.log(`[API] ${config.method || 'GET'} ${baseUrl}${url}`, config.data || '');
+    }
+
     const requestPayload = {
-      url: API_BASE_URL + url,
+      url: baseUrl + url,
       method: config.method || 'GET',
       data: config.data || {},
       header: {
@@ -46,11 +58,52 @@ function request(url, options = {}) {
         'X-Request-Id': `req_${currentRequestId}_${Date.now()}`
       },
       timeout: config.timeout,
-      success: (res) => handleSuccess(res, config, resolve, reject),
-      fail: (err) => handleFail(err, config, url, reject)
+      success: (res) => {
+        if (envConfig.isDebug()) {
+          console.log(`[API] Response ${baseUrl}${url}`, res.statusCode, res.data);
+        }
+        handleSuccess(res, config, resolve, reject);
+      },
+      fail: (err) => {
+        if (envConfig.isDebug()) {
+          console.error(`[API] Failed ${baseUrl}${url}`, err);
+        }
+        handleFail(err, config, url, reject);
+      }
     };
 
     wx.request(requestPayload);
+  });
+}
+
+function mockRequest(url, config) {
+  return new Promise((resolve, reject) => {
+    if (config.showLoading !== false) {
+      wx.showLoading({
+        title: config.loadingText || '加载中...',
+        mask: true
+      });
+    }
+
+    setTimeout(() => {
+      wx.hideLoading();
+      const method = (config.method || 'GET').toUpperCase();
+      const mockResult = mockData.handleMock(url, method, config.data);
+
+      if (envConfig.isDebug()) {
+        console.log(`[Mock] ${method} ${url}`, mockResult);
+      }
+
+      if (mockResult && mockResult.success === true) {
+        resolve(mockResult);
+      } else {
+        if (mockResult && mockResult.code) {
+          handleBusinessError(mockResult, reject);
+        } else {
+          reject(mockResult || { success: false, message: 'Mock数据未找到' });
+        }
+      }
+    }, 300 + Math.random() * 500);
   });
 }
 
@@ -262,12 +315,13 @@ function del(url, data, config = {}) {
  */
 function uploadFile(filePath, name = 'file', formData = {}) {
   const token = wx.getStorageSync('accessToken');
+  const baseUrl = getApiBaseUrl();
 
   return new Promise((resolve, reject) => {
     wx.showLoading({ title: '上传中...', mask: true });
 
     wx.uploadFile({
-      url: API_BASE_URL + '/upload',
+      url: baseUrl + '/upload',
       filePath,
       name,
       formData,
@@ -338,5 +392,7 @@ module.exports = {
   delete: del,
   uploadFile,
   getLocation,
-  API_BASE_URL
+  API_BASE_URL: getApiBaseUrl(),
+  getApiBaseUrl,
+  envConfig
 };

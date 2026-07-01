@@ -221,3 +221,323 @@ export const createComment = (postId, content) => {
     }, 500);
   });
 };
+
+function getCurrentUserStatus() {
+  try {
+    const userInfo = wx.getStorageSync('userInfo');
+    if (userInfo && userInfo.verificationStatus !== undefined) {
+      return userInfo.verificationStatus;
+    }
+  } catch (e) {}
+  return 0;
+}
+
+function isVerified() {
+  return getCurrentUserStatus() === 2;
+}
+
+function handleMock(url, method, data) {
+  method = method.toUpperCase();
+
+  if (url === '/v1/auth/login' && method === 'POST') {
+    const user = {
+      id: 1,
+      nickname: '测试用户',
+      avatarUrl: '/assets/avatar1.png',
+      verificationStatus: 0,
+      verificationDesc: '未认证'
+    };
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        user,
+        accessToken: 'mock_token_UNAUTH_' + Date.now()
+      }
+    };
+  }
+
+  if (url === '/v1/auth/login-mock' && method === 'POST') {
+    const statusType = data && data.statusType !== undefined ? data.statusType : 0;
+    const statusMap = {
+      0: { status: 0, desc: '未认证', token: 'mock_token_UNAUTH' },
+      1: { status: 1, desc: '认证中', token: 'mock_token_PENDING' },
+      2: { status: 2, desc: '已认证', token: 'mock_token_VERIFIED' }
+    };
+    const info = statusMap[statusType] || statusMap[0];
+    const user = {
+      id: 1,
+      nickname: '测试用户',
+      avatarUrl: '/assets/avatar1.png',
+      verificationStatus: info.status,
+      verificationDesc: info.desc
+    };
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        user,
+        accessToken: info.token + '_' + Date.now()
+      }
+    };
+  }
+
+  if (url === '/v1/auth/status' && method === 'GET') {
+    const status = getCurrentUserStatus();
+    const statusDesc = ['未认证', '认证中', '已认证'][status] || '未认证';
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        verificationStatus: status,
+        description: statusDesc,
+        canWrite: status === 2,
+        canRead: true
+      }
+    };
+  }
+
+  if (url === '/v1/auth/apply-verification' && method === 'POST') {
+    if (!isVerified()) {
+      const userInfo = wx.getStorageSync('userInfo') || {};
+      userInfo.verificationStatus = 1;
+      userInfo.verificationDesc = '认证中';
+      wx.setStorageSync('userInfo', userInfo);
+    }
+    return {
+      success: true,
+      code: 200,
+      message: '提交成功，等待审核'
+    };
+  }
+
+  if (url.match(/^\/v1\/posts\/?$/) && method === 'GET') {
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: mockPosts,
+        total: mockPosts.length,
+        page: data && data.page ? data.page : 1,
+        pageSize: data && data.pageSize ? data.pageSize : 10
+      }
+    };
+  }
+
+  if (url.match(/^\/v1\/posts\/?$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    const newPost = {
+      id: Date.now(),
+      userId: 999,
+      userName: '我',
+      userAvatar: '/assets/my-avatar.png',
+      postType: data && data.postType ? data.postType : 1,
+      title: data && data.title ? data.title : '',
+      content: data && data.content ? data.content : '',
+      images: [],
+      likeCount: 0,
+      commentCount: 0,
+      viewCount: 0,
+      createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    };
+    mockPosts.unshift(newPost);
+    return {
+      success: true,
+      code: 200,
+      message: '发布成功',
+      data: newPost
+    };
+  }
+
+  if (url.match(/^\/v1\/posts\/nearby/) && method === 'GET') {
+    const helperPosts = mockPosts.filter(p => p.postType === 2 || p.helpType);
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: helperPosts.map(p => ({
+          ...p,
+          distance: Math.floor(Math.random() * 5000) + 100
+        })),
+        total: helperPosts.length
+      }
+    };
+  }
+
+  if (url.match(/^\/v1\/posts\/\d+\/?$/) && method === 'GET') {
+    const id = parseInt(url.split('/')[3]);
+    const post = mockPosts.find(p => p.id === id);
+    if (post) {
+      return { success: true, code: 200, message: '操作成功', data: post };
+    }
+    return { success: false, code: 404, message: '帖子不存在' };
+  }
+
+  if (url.match(/^\/v1\/posts\/\d+\/like$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    const id = parseInt(url.split('/')[3]);
+    const post = mockPosts.find(p => p.id === id);
+    if (post) {
+      const liked = data && data.liked;
+      if (liked) {
+        post.likeCount = (post.likeCount || 0) + 1;
+        likeStatus[id] = true;
+      } else {
+        post.likeCount = Math.max(0, (post.likeCount || 0) - 1);
+        delete likeStatus[id];
+      }
+      return { success: true, code: 200, message: '操作成功', data: { liked: !!liked, likeCount: post.likeCount } };
+    }
+    return { success: false, code: 404, message: '帖子不存在' };
+  }
+
+  if (url.match(/^\/v1\/comments\/?$/) && method === 'GET') {
+    const postId = data && data.postId ? data.postId : 1;
+    const comments = mockComments[postId] || [];
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: comments,
+        total: comments.length
+      }
+    };
+  }
+
+  if (url.match(/^\/v1\/comments\/?$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    const postId = data && data.postId ? data.postId : 1;
+    const content = data && data.content ? data.content : '';
+    const newComment = {
+      id: Date.now(),
+      userId: 999,
+      userName: '我',
+      userAvatar: '/assets/my-avatar.png',
+      content,
+      likeCount: 0,
+      createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    };
+    if (!mockComments[postId]) {
+      mockComments[postId] = [];
+    }
+    mockComments[postId].unshift(newComment);
+    const post = mockPosts.find(p => p.id == postId);
+    if (post) {
+      post.commentCount = (post.commentCount || 0) + 1;
+    }
+    return {
+      success: true,
+      code: 200,
+      message: '评论成功',
+      data: newComment
+    };
+  }
+
+  if (url.match(/^\/v1\/comments\/\d+\/?$/) && method === 'DELETE') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
+    }
+    return { success: true, code: 200, message: '删除成功' };
+  }
+
+  if (url.match(/^\/v1\/comments\/\d+\/like$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
+    }
+    return { success: true, code: 200, message: '操作成功' };
+  }
+
+  if (url.match(/^\/v1\/orders\/nearby/) && method === 'GET') {
+    const orders = mockOrders || mockPosts.filter(p => p.postType === 2).map(p => ({
+      id: p.id,
+      postId: p.id,
+      userId: p.userId,
+      userName: p.userName,
+      userAvatar: p.userAvatar,
+      helpType: p.helpType || 1,
+      rewardAmount: p.rewardAmount || 0,
+      distance: Math.floor(Math.random() * 5000) + 100,
+      status: 1,
+      title: p.title,
+      content: p.content,
+      createdAt: p.createdAt
+    }));
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: orders,
+        total: orders.length
+      }
+    };
+  }
+
+  if (url.match(/^\/v1\/orders\/?$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    return {
+      success: true,
+      code: 200,
+      message: '发布成功',
+      data: { id: Date.now(), status: 1 }
+    };
+  }
+
+  if (url.match(/^\/v1\/orders\/\d+\/accept$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    return { success: true, code: 200, message: '接单成功' };
+  }
+
+  return {
+    success: false,
+    code: 404,
+    message: 'Mock接口未找到: ' + method + ' ' + url
+  };
+}
+
+module.exports = {
+  mockPosts,
+  mockComments,
+  mockOrders: [],
+  likeStatus,
+  getPostList,
+  getPostDetail,
+  publishPost,
+  toggleLike,
+  getCommentList,
+  publishComment,
+  handleMock
+};
