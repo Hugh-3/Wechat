@@ -5,7 +5,8 @@
     "pages/profile/index",
     "pages/auth/index",
     "pages/publish/index",
-    "pages/post-detail/index"
+    "pages/post-detail/index",
+    "pages/order-detail/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

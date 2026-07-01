@@ -89,7 +89,7 @@ const mockPosts = [
 ];
 
 // 获取帖子列表
-export const getPostList = (type, page = 1, pageSize = 10) => {
+const getPostList = (type, page = 1, pageSize = 10) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const filtered = type ? mockPosts.filter(p => p.postType === type) : mockPosts;
@@ -106,7 +106,7 @@ export const getPostList = (type, page = 1, pageSize = 10) => {
 };
 
 // 获取互助附近列表（按距离排序）
-export const getNearbyOrders = (lat, lng, radiusKm = 5) => {
+const getNearbyOrders = (lat, lng, radiusKm = 5) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const orders = mockPosts
@@ -122,7 +122,7 @@ export const getNearbyOrders = (lat, lng, radiusKm = 5) => {
 };
 
 // 模拟发布动态
-export const createPost = (data) => {
+const createPost = (data) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       // 模拟验证状态检查
@@ -146,7 +146,7 @@ export const createPost = (data) => {
 };
 
 // 点赞/取消点赞
-export const toggleLike = (postId, liked) => {
+const toggleLike = (postId, liked) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       likeStatus[postId] = liked;
@@ -160,7 +160,7 @@ export const toggleLike = (postId, liked) => {
 };
 
 // 获取帖子详情
-export const getPostDetail = (postId) => {
+const getPostDetail = (postId) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const post = mockPosts.find(p => p.id == postId);
@@ -177,7 +177,7 @@ export const getPostDetail = (postId) => {
 };
 
 // 获取评论列表
-export const getComments = (postId, page = 1, pageSize = 20) => {
+const getComments = (postId, page = 1, pageSize = 20) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const comments = mockComments[postId] || [];
@@ -192,7 +192,7 @@ export const getComments = (postId, page = 1, pageSize = 20) => {
 };
 
 // 发表评论
-export const createComment = (postId, content) => {
+const createComment = (postId, content) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const status = wx.getStorageSync('mockUserStatus') || 0;
@@ -521,6 +521,42 @@ function handleMock(url, method, data) {
     return { success: true, code: 200, message: '接单成功' };
   }
 
+  if (url.match(/^\/v1\/orders\/\d+\/complete$/) && method === 'POST') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      const errCode = status === 0 ? 40301 : 40302;
+      const errMsg = status === 0 ? '仅认证业主可进行此操作' : '您的业主认证正在审核中，审核通过后即可使用';
+      return { success: false, code: errCode, message: errMsg };
+    }
+    return { success: true, code: 200, message: '完成成功' };
+  }
+
+  if (url.match(/^\/v1\/orders\/\d+\/?$/) && method === 'GET') {
+    const id = parseInt(url.split('/')[3]);
+    const post = mockPosts.find(p => p.id === id);
+    if (post) {
+      const order = {
+        id: post.id,
+        postId: post.id,
+        userId: post.userId,
+        userName: post.userName,
+        userAvatar: post.userAvatar,
+        helpType: post.helpType || 1,
+        helpTypeName: ['', '拼单团购', '代取代买', '生活求助', '技能交换'][post.helpType || 1],
+        rewardAmount: post.rewardAmount || 0,
+        distance: Math.floor(Math.random() * 5000) + 100,
+        status: 1,
+        statusText: '待接单',
+        title: post.title,
+        content: post.content,
+        images: post.images || [],
+        createdAt: post.createdAt
+      };
+      return { success: true, code: 200, message: '操作成功', data: order };
+    }
+    return { success: false, code: 404, message: '订单不存在' };
+  }
+
   return {
     success: false,
     code: 404,
@@ -531,13 +567,13 @@ function handleMock(url, method, data) {
 module.exports = {
   mockPosts,
   mockComments,
-  mockOrders: [],
   likeStatus,
   getPostList,
-  getPostDetail,
-  publishPost,
+  getNearbyOrders,
+  createPost,
   toggleLike,
-  getCommentList,
-  publishComment,
+  getPostDetail,
+  getComments,
+  createComment,
   handleMock
 };

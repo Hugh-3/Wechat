@@ -35,7 +35,7 @@ const ENV_CONFIG = {
   }
 };
 
-const DEFAULT_ENV = ENV_DEV;
+const DEFAULT_ENV = ENV_MOCK;
 const ENV_STORAGE_KEY = 'app_env';
 
 function getCurrentEnv() {

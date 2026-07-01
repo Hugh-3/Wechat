@@ -1,5 +1,8 @@
+// pages/publish/index.js
+// 发布页面
+
 const { getCurrentUserStatus, canWrite } = require('../../utils/auth');
-const { createPost } = require('../../mock/data');
+const postApi = require('../../api/post');
 
 Page({
   data: {
@@ -118,7 +121,7 @@ Page({
       params.rewardAmount = rewardAmount ? parseFloat(rewardAmount) : 0;
     }
 
-    createPost(params).then(() => {
+    postApi.create(params).then(() => {
       wx.showToast({ title: '发布成功', icon: 'success' });
       setTimeout(() => {
         wx.navigateBack();

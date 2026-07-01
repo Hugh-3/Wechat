@@ -7,8 +7,7 @@
  * - VERIFIED(2): 全功能开放
  */
 
-// 状态配置
-export const statusConfig = {
+const statusConfig = {
   UNAUTH: {
     status: 0,
     label: '未认证',
@@ -48,15 +47,13 @@ export const statusConfig = {
   }
 };
 
-// 获取当前状态配置
-export const getStatusConfig = (status) => {
+function getStatusConfig(status) {
   if (status === 0) return statusConfig.UNAUTH;
   if (status === 1) return statusConfig.PENDING;
   return statusConfig.VERIFIED;
-};
+}
 
-// 发布按钮组件属性计算
-export const computePublishButtonProps = (userStatus) => {
+function computePublishButtonProps(userStatus) {
   const config = getStatusConfig(userStatus);
 
   return {
@@ -67,41 +64,50 @@ export const computePublishButtonProps = (userStatus) => {
     backgroundColor: config.canWrite ? '#07c160' : '#ccc',
     iconColor: '#fff'
   };
-};
+}
 
-// 认证引导弹窗内容
-export const getAuthGuideContent = () => ({
-  title: '为了保护您和邻居的安全',
-  subtitle: '只有认证业主才能使用此功能',
-  features: [
-    { icon: '🔒', text: '您的证件信息将加密存储' },
-    { icon: '📋', text: '审核通过后7天自动删除原图' },
-    { icon: '✅', text: '认证通过即可发布/互动' }
-  ],
-  primaryButton: '去认证',
-  secondaryButton: '稍后再说', // 放在底部灰色小字，不显眼
-  showCloseButton: false // 【红线强制】无关闭按钮
-});
+function getAuthGuideContent() {
+  return {
+    title: '为了保护您和邻居的安全',
+    subtitle: '只有认证业主才能使用此功能',
+    features: [
+      { icon: '🔒', text: '您的证件信息将加密存储' },
+      { icon: '📋', text: '审核通过后7天自动删除原图' },
+      { icon: '✅', text: '认证通过即可发布/互动' }
+    ],
+    primaryButton: '去认证',
+    secondaryButton: '稍后再说',
+    showCloseButton: false
+  };
+}
 
-// 列表项权限处理
-export const computeListItemActions = (userStatus) => {
+function computeListItemActions(userStatus) {
   const config = getStatusConfig(userStatus);
 
   return {
-    showContact: config.canWrite, // VERIFIED才显示联系方式
+    showContact: config.canWrite,
     showContactText: config.canWrite ? '我要联系' : '查看详情',
     contactTextHidden: !config.canWrite,
-    distanceAccuracy: config.canWrite ? '精确' : '模糊', // 非认证用户显示模糊距离
+    distanceAccuracy: config.canWrite ? '精确' : '模糊',
     likeEnabled: config.canWrite,
     commentEnabled: config.canWrite
   };
-};
+}
 
-// 模糊距离处理
-export const getFuzzyDistance = (distance) => {
-  const num = parseInt(distance.match(/\d+/)[0]);
+function getFuzzyDistance(distance) {
+  const num = parseInt(distance);
+  if (isNaN(num)) return distance;
   if (num < 300) return '约500米内';
   if (num < 800) return '约1公里内';
   if (num < 3000) return '约3公里内';
   return '约5公里内';
+}
+
+module.exports = {
+  statusConfig,
+  getStatusConfig,
+  computePublishButtonProps,
+  getAuthGuideContent,
+  computeListItemActions,
+  getFuzzyDistance
 };

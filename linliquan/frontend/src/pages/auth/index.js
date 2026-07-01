@@ -1,4 +1,8 @@
+// pages/auth/index.js
+// 认证页面
+
 const { setCurrentUserStatus, UserStatus } = require('../../utils/auth');
+const authApi = require('../../api/auth');
 
 Page({
   data: {
@@ -10,7 +14,7 @@ Page({
   },
 
   onLoad() {
-    const user = wx.getStorageSync('mockUser');
+    const user = wx.getStorageSync('userInfo');
     if (user) {
       this.setData({ phone: user.phone || '' });
     }
@@ -37,7 +41,7 @@ Page({
     this.setData({ step: 2 });
   },
 
-  submitVerification() {
+  async submitVerification() {
     const { idCard, houseNumber, phone } = this.data;
 
     if (!idCard || idCard.length !== 18) {
@@ -52,7 +56,8 @@ Page({
 
     this.setData({ submitting: true });
 
-    setTimeout(() => {
+    try {
+      await authApi.applyVerification({ idCard, houseNumber, phone });
       wx.showModal({
         title: '提交成功',
         content: '您的业主认证申请已提交，审核员将在1-2个工作日内完成审核',
@@ -62,8 +67,11 @@ Page({
           wx.switchTab({ url: '/pages/index/index' });
         }
       });
+    } catch (err) {
+      wx.showToast({ title: err.message || '提交失败', icon: 'none' });
+    } finally {
       this.setData({ submitting: false });
-    }, 1500);
+    }
   },
 
   goBack() {

@@ -1,0 +1,106 @@
+<!-- pages/order-detail/index.wxml -->
+<!-- 订单详情页 -->
+
+<view class="container">
+  <scroll-view scroll-y class="scroll-content" wx:if="{{order}}">
+    <!-- 订单头部信息 -->
+    <view class="order-header">
+      <view class="order-type-badge type-{{order.helpType}}">
+        {{order.helpTypeName || '互助任务'}}
+      </view>
+      <view class="status-badge status-{{order.status}}">
+        {{order.statusText || '待接单'}}
+      </view>
+    </view>
+
+    <!-- 订单标题 -->
+    <view class="order-main">
+      <text class="order-title">{{order.title}}</text>
+
+      <!-- 酬劳 -->
+      <view class="reward-section" wx:if="{{order.rewardAmount > 0}}">
+        <text class="reward-label">酬劳</text>
+        <text class="reward-amount">¥{{order.rewardAmount}}</text>
+      </view>
+
+      <!-- 距离 -->
+      <view class="distance-section">
+        <text class="distance-icon">📍</text>
+        <text class="distance-text">距离 {{distanceText}}</text>
+      </view>
+    </view>
+
+    <!-- 发布者信息 -->
+    <view class="publisher-section">
+      <image class="publisher-avatar" src="{{order.userAvatar}}" />
+      <view class="publisher-info">
+        <text class="publisher-name">{{order.userName}}</text>
+        <text class="publish-time">{{order.timeText}}</text>
+      </view>
+    </view>
+
+    <!-- 订单内容 -->
+    <view class="order-content-section">
+      <text class="section-title">任务详情</text>
+      <text class="order-content">{{order.content}}</text>
+
+      <!-- 订单图片 -->
+      <view class="order-images" wx:if="{{order.images && order.images.length > 0}}">
+        <image
+          wx:for="{{order.images}}"
+          wx:key="index"
+          src="{{item}}"
+          mode="aspectFill"
+          class="order-image"
+          bindtap="previewImage"
+          data-index="{{index}}"
+        />
+      </view>
+    </view>
+
+    <view class="bottom-placeholder"></view>
+  </scroll-view>
+
+  <!-- 加载状态 -->
+  <view class="loading-page" wx:if="{{!order && loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="action-bar">
+    <view class="action-left" wx:if="{{canInteract}}">
+      <button class="contact-btn" bindtap="onContactTap">
+        联系发布者
+      </button>
+    </view>
+    <view class="action-left" wx:else>
+      <button class="contact-btn disabled" bindtap="onContactTap">
+        认证后可联系
+      </button>
+    </view>
+
+    <view class="action-right">
+      <button
+        class="action-btn accept"
+        wx:if="{{order && order.status === 1}}"
+        bindtap="onAcceptTap"
+      >
+        {{canInteract ? '我要接单' : '去认证'}}
+      </button>
+      <button
+        class="action-btn complete"
+        wx:if="{{order && order.status === 2}}"
+        bindtap="onCompleteTap"
+      >
+        完成任务
+      </button>
+      <button
+        class="action-btn done"
+        wx:if="{{order && order.status === 3}}"
+        disabled
+      >
+        已完成
+      </button>
+    </view>
+  </view>
+</view>

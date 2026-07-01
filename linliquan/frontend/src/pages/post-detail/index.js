@@ -2,7 +2,8 @@
 // 帖子详情页
 
 const { getCurrentUserStatus, canWrite } = require('../../utils/auth');
-const { getPostDetail, getComments, createComment, toggleLike } = require('../../mock/data');
+const postApi = require('../../api/post');
+const commentApi = require('../../api/comment');
 const { formatRelativeTime } = require('../../utils/time');
 
 Page({
@@ -40,10 +41,10 @@ Page({
     });
   },
 
-  // 加载帖子详情
   async loadPostDetail() {
     try {
-      const post = await getPostDetail(this.data.postId);
+      const res = await postApi.getDetail(this.data.postId);
+      const post = res.data || {};
       post.timeText = formatRelativeTime(post.createdAt);
       this.setData({
         post,
@@ -55,19 +56,19 @@ Page({
     }
   },
 
-  // 加载评论
   async loadComments() {
     this.setData({ loading: true });
     try {
-      const result = await getComments(this.data.postId);
-      const comments = result.list.map(item => ({
+      const res = await commentApi.getList(this.data.postId, 1, 20);
+      const result = res.data || { list: [], total: 0 };
+      const comments = (result.list || []).map(item => ({
         ...item,
         timeText: formatRelativeTime(item.createdAt),
         liked: false
       }));
       this.setData({
         comments,
-        commentCount: result.total
+        commentCount: result.total || 0
       });
     } catch (err) {
       console.error('加载评论失败', err);
@@ -76,12 +77,10 @@ Page({
     }
   },
 
-  // 评论输入
   onCommentInput(e) {
     this.setData({ commentText: e.detail.value });
   },
 
-  // 提交评论
   async submitComment() {
     if (!this.data.canComment) {
       this.showAuthModal();
@@ -94,7 +93,8 @@ Page({
     this.setData({ submitting: true });
 
     try {
-      const newComment = await createComment(this.data.postId, content);
+      const res = await commentApi.create(this.data.postId, content);
+      const newComment = res.data || {};
       newComment.timeText = formatRelativeTime(newComment.createdAt);
       newComment.liked = false;
 
@@ -117,7 +117,6 @@ Page({
     }
   },
 
-  // 点赞帖子
   onPostLike() {
     if (!this.data.canComment) {
       this.showAuthModal();
@@ -135,7 +134,7 @@ Page({
       }
     });
 
-    toggleLike(this.data.postId, newLiked).catch(() => {
+    postApi.toggleLike(this.data.postId, newLiked).catch(() => {
       this.setData({
         post: {
           ...post,
@@ -147,7 +146,6 @@ Page({
     });
   },
 
-  // 点赞评论
   onCommentLike(e) {
     if (!this.data.canComment) {
       this.showAuthModal();
@@ -169,9 +167,18 @@ Page({
     };
 
     this.setData({ comments });
+
+    commentApi.toggleLike(commentId, newLiked).catch(() => {
+      comments[index] = {
+        ...comment,
+        liked: comment.liked,
+        likeCount: comment.likeCount
+      };
+      this.setData({ comments });
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    });
   },
 
-  // 回复
   onReply(e) {
     if (!this.data.canComment) {
       this.showAuthModal();
@@ -184,7 +191,6 @@ Page({
     });
   },
 
-  // 预览图片
   previewImage(e) {
     const index = e.currentTarget.dataset.index;
     const images = this.data.post.images;
@@ -194,7 +200,6 @@ Page({
     });
   },
 
-  // 显示认证弹窗
   showAuthModal() {
     wx.showModal({
       title: '需要业主认证',

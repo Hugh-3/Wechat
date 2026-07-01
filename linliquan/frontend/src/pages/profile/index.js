@@ -2,6 +2,7 @@
 // 个人中心页面
 
 const { getCurrentUserStatus, getStatusConfig } = require('../../utils/auth');
+const authApi = require('../../api/auth');
 
 Page({
   data: {
@@ -31,8 +32,7 @@ Page({
     this.loadUserInfo();
   },
 
-  // 加载用户信息
-  loadUserInfo() {
+  async loadUserInfo() {
     const status = getCurrentUserStatus();
     const config = getStatusConfig(status);
 
@@ -74,17 +74,14 @@ Page({
     });
   },
 
-  // 编辑资料
   onEditProfile() {
     wx.showToast({ title: '资料编辑功能开发中', icon: 'none' });
   },
 
-  // 跳转认证页
   goToAuth() {
     wx.navigateTo({ url: '/pages/auth/index' });
   },
 
-  // 我的发布
   goToMyPosts() {
     if (!this.data.isVerified) {
       wx.showToast({ title: '认证后可查看', icon: 'none' });
@@ -93,7 +90,6 @@ Page({
     wx.showToast({ title: '我的发布功能开发中', icon: 'none' });
   },
 
-  // 我的互助
   goToMyHelps() {
     if (!this.data.isVerified) {
       wx.showToast({ title: '认证后可查看', icon: 'none' });
@@ -102,32 +98,26 @@ Page({
     wx.showToast({ title: '我的互助功能开发中', icon: 'none' });
   },
 
-  // 我的收藏
   goToMyFavorites() {
     wx.showToast({ title: '收藏功能开发中', icon: 'none' });
   },
 
-  // 获赞
   goToMyLikes() {
     wx.showToast({ title: '获赞记录功能开发中', icon: 'none' });
   },
 
-  // 评论
   goToMyComments() {
     wx.showToast({ title: '评论记录功能开发中', icon: 'none' });
   },
 
-  // 设置
   goToSettings() {
     wx.showToast({ title: '设置功能开发中', icon: 'none' });
   },
 
-  // 帮助与反馈
   goToHelp() {
     wx.showToast({ title: '帮助功能开发中', icon: 'none' });
   },
 
-  // 关于
   goToAbout() {
     wx.showModal({
       title: '关于邻里圈',
@@ -136,7 +126,6 @@ Page({
     });
   },
 
-  // 切换状态（调试用）
   switchStatus() {
     const statuses = [0, 1, 2];
     const current = this.data.userStatus;

@@ -1,10 +1,24 @@
 const { get, post, del } = require('../utils/request');
 
-exports.getCommentList = (postId, page, pageSize) =>
-  get('/v1/comments', { postId, page, pageSize });
+function getList(postId, page, pageSize) {
+  return get('/v1/comments', { postId, page, pageSize });
+}
 
-exports.createComment = (data) => post('/v1/comments', data);
+function create(postId, content) {
+  return post('/v1/comments', { postId, content });
+}
 
-exports.deleteComment = (id) => del(`/v1/comments/${id}`);
+function deleteComment(id) {
+  return del(`/v1/comments/${id}`);
+}
 
-exports.likeComment = (id) => post(`/v1/comments/${id}/like`, {});
+function toggleLike(id, liked) {
+  return post(`/v1/comments/${id}/like`, { liked });
+}
+
+module.exports = {
+  getList,
+  create,
+  delete: deleteComment,
+  toggleLike
+};

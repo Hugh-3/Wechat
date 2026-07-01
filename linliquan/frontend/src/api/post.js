@@ -1,13 +1,29 @@
-const { get, post, del } = require('../utils/request');
+const { get, post } = require('../utils/request');
 
-exports.getPostList = (type, page, pageSize) =>
-  get('/v1/posts', { type, page, pageSize });
+function getList(type, page, pageSize) {
+  return get('/v1/posts', { type, page, pageSize });
+}
 
-exports.getPostDetail = (id) => get(`/v1/posts/${id}`);
+function getDetail(id) {
+  return get(`/v1/posts/${id}`);
+}
 
-exports.createPost = (data) => post('/v1/posts', data);
+function create(data) {
+  return post('/v1/posts', data);
+}
 
-exports.toggleLike = (id, liked) => post(`/v1/posts/${id}/like`, { liked });
+function toggleLike(id, liked) {
+  return post(`/v1/posts/${id}/like`, { liked });
+}
 
-exports.getNearbyOrders = (lat, lng, radius, page, pageSize) =>
-  get('/v1/posts/nearby', { lat, lng, radius, page, pageSize });
+function getNearby(lat, lng, radius, page, pageSize) {
+  return get('/v1/posts/nearby', { lat, lng, radius, page, pageSize });
+}
+
+module.exports = {
+  getList,
+  getDetail,
+  create,
+  toggleLike,
+  getNearby
+};
