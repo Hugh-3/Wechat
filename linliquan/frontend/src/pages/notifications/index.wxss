@@ -1,0 +1,167 @@
+/* pages/notifications/index.wxss */
+/* 消息通知页面样式 */
+
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40rpx;
+}
+
+/* 顶部操作栏 */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.unread-tip {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.mark-all {
+  font-size: 26rpx;
+  color: #999;
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  background: #f5f5f5;
+}
+
+.mark-all.active {
+  color: #07c160;
+  background: #e8f8f0;
+}
+
+/* 通知列表 */
+.notification-list {
+  padding: 20rpx 0;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  margin: 0 20rpx 16rpx;
+  border-radius: 16rpx;
+  padding: 30rpx 24rpx;
+  transition: background 0.2s ease;
+}
+
+.notification-item.unread {
+  background: #f6fffa;
+  border-left: 6rpx solid #07c160;
+}
+
+/* 类型图标 */
+.type-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.type-icon text {
+  font-size: 36rpx;
+  color: #fff;
+}
+
+/* 通知内容 */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #fa5151;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+.desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-top: 8rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  margin-top: 12rpx;
+}
+
+.type-tag {
+  font-size: 22rpx;
+  padding: 2rpx 12rpx;
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  margin-right: 16rpx;
+}
+
+.time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 加载与状态 */
+.loading,
+.no-more {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 空状态 */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 0 80rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.empty-sub {
+  font-size: 24rpx;
+  color: #999;
+}

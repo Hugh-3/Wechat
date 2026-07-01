@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>邻里圈 · 管理后台</title>
+<style>
+  :root {
+    --c-bg: #f4f6f5;
+    --c-surface: #ffffff;
+    --c-surface-2: #f8faf9;
+    --c-border: #e3e8e6;
+    --c-border-strong: #cbd5d1;
+    --c-text: #1a2b25;
+    --c-text-soft: #5a6b64;
+    --c-text-mute: #8a9990;
+    --c-primary: #0f6b54;
+    --c-primary-hover: #0c5a48;
+    --c-primary-soft: #e6f3ef;
+    --c-accent: #d97706;
+    --c-accent-soft: #fef3e2;
+    --c-success: #15803d;
+    --c-success-soft: #dcfce7;
+    --c-danger: #b91c1c;
+    --c-danger-soft: #fee2e2;
+    --c-warn: #b45309;
+    --c-warn-soft: #fef3c7;
+    --c-info: #1d4ed8;
+    --c-info-soft: #dbeafe;
+    --c-muted: #475569;
+    --c-muted-soft: #e2e8f0;
+    --shadow-sm: 0 1px 2px rgba(15, 107, 84, 0.06);
+    --shadow-md: 0 4px 12px rgba(15, 107, 84, 0.08);
+    --shadow-lg: 0 12px 32px rgba(15, 107, 84, 0.12);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: var(--c-primary); text-decoration: none; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-weight: 500; font-size: 13px; transition: all .15s ease;
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  .btn-primary { background: var(--c-primary); color: #fff; }
+  .btn-primary:hover { background: var(--c-primary-hover); }
+  .btn-ghost { background: var(--c-surface); color: var(--c-text); border-color: var(--c-border-strong); }
+  .btn-ghost:hover { background: var(--c-surface-2); border-color: var(--c-primary); color: var(--c-primary); }
+  .btn-success { background: var(--c-success); color: #fff; }
+  .btn-success:hover { filter: brightness(1.1); }
+  .btn-danger { background: var(--c-danger); color: #fff; }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .btn-warn { background: var(--c-warn); color: #fff; }
+  .btn-warn:hover { filter: brightness(1.1); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ---------- Login ---------- */
+  .login-wrap {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(15, 107, 84, 0.18), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(217, 119, 6, 0.12), transparent 50%),
+      linear-gradient(135deg, #0f6b54 0%, #0a4d3d 100%);
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 420px; background: var(--c-surface);
+    border-radius: var(--radius-lg); padding: 40px 36px; box-shadow: var(--shadow-lg);
+  }
+  .login-brand { text-align: center; margin-bottom: 32px; }
+  .login-brand .logo {
+    width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--c-primary), #14b884);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 26px; font-weight: 700; box-shadow: 0 8px 20px rgba(15, 107, 84, 0.35);
+  }
+  .login-brand h1 { font-size: 22px; color: var(--c-text); letter-spacing: .5px; }
+  .login-brand p { font-size: 13px; color: var(--c-text-mute); margin-top: 4px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; color: var(--c-text-soft); margin-bottom: 6px; font-weight: 500; }
+  .field input {
+    width: 100%; padding: 11px 14px; border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); background: var(--c-surface-2); color: var(--c-text);
+    transition: all .15s ease;
+  }
+  .field input:focus { outline: none; border-color: var(--c-primary); background: #fff; box-shadow: 0 0 0 3px rgba(15, 107, 84, 0.12); }
+  .login-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .login-actions .btn { flex: 1; padding: 12px; font-size: 14px; }
+  .login-tip { margin-top: 20px; padding: 12px 14px; background: var(--c-primary-soft); border-radius: var(--radius-sm); font-size: 12px; color: var(--c-primary); line-height: 1.6; }
+
+  /* ---------- App Shell ---------- */
+  .app { display: none; min-height: 100vh; flex-direction: column; }
+  .app.active { display: flex; }
+
+  .app-header {
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+    padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .app-header .brand { display: flex; align-items: center; gap: 12px; }
+  .app-header .brand .logo {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--c-primary), #14b884);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+  }
+  .app-header .brand .title { font-size: 16px; font-weight: 600; color: var(--c-text); }
+  .app-header .brand .sub { font-size: 11px; color: var(--c-text-mute); margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .header-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--c-text-soft); }
+  .header-user .avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--c-primary-soft);
+    color: var(--c-primary); display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+    padding: 0 28px; display: flex; gap: 4px; position: sticky; top: 60px; z-index: 90;
+  }
+  .tab {
+    padding: 14px 20px; font-size: 14px; color: var(--c-text-soft); font-weight: 500;
+    border-bottom: 2px solid transparent; transition: all .15s ease; position: relative;
+  }
+  .tab:hover { color: var(--c-primary); }
+  .tab.active { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+  .tab .badge {
+    display: inline-block; min-width: 18px; padding: 1px 5px; margin-left: 6px;
+    background: var(--c-accent); color: #fff; font-size: 11px; border-radius: 9px;
+    text-align: center; line-height: 1.4;
+  }
+
+  /* ---------- Content ---------- */
+  .content { flex: 1; padding: 24px 28px 60px; max-width: 1440px; width: 100%; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .page-desc { font-size: 13px; color: var(--c-text-mute); margin-bottom: 22px; }
+
+  /* ---------- Cards (stats) ---------- */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-md);
+    padding: 18px 20px; box-shadow: var(--shadow-sm); transition: all .2s ease;
+    position: relative; overflow: hidden;
+  }
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--c-primary); }
+  .stat-card .label { font-size: 13px; color: var(--c-text-soft); margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: var(--c-text); line-height: 1.2; }
+  .stat-card .delta { font-size: 12px; margin-top: 8px; color: var(--c-text-mute); }
+  .stat-card .delta.up { color: var(--c-success); }
+  .stat-card .delta.down { color: var(--c-danger); }
+  .stat-card .icon {
+    position: absolute; top: 14px; right: 16px; width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .stat-card .icon.green { background: var(--c-success-soft); color: var(--c-success); }
+  .stat-card .icon.amber { background: var(--c-warn-soft); color: var(--c-warn); }
+  .stat-card .icon.blue { background: var(--c-info-soft); color: var(--c-info); }
+  .stat-card .icon.orange { background: var(--c-accent-soft); color: var(--c-accent); }
+  .stat-card .icon.red { background: var(--c-danger-soft); color: var(--c-danger); }
+  .stat-card .icon.teal { background: var(--c-primary-soft); color: var(--c-primary); }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .toolbar .grow { flex: 1; }
+  .search-input {
+    width: 280px; max-width: 100%; padding: 8px 14px; border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); background: var(--c-surface); transition: all .15s ease;
+  }
+  .search-input:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(15, 107, 84, 0.12); }
+  .filter-select {
+    padding: 8px 14px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm);
+    background: var(--c-surface); cursor: pointer; color: var(--c-text);
+  }
+  .filter-select:focus { outline: none; border-color: var(--c-primary); }
+
+  /* ---------- Table ---------- */
+  .table-card {
+    background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-md);
+    overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 16px;
+  }
+  .table-card .card-head {
+    padding: 14px 18px; border-bottom: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: space-between; background: var(--c-surface-2);
+  }
+  .card-head h3 { font-size: 14px; font-weight: 600; color: var(--c-text); }
+  .card-head .meta { font-size: 12px; color: var(--c-text-mute); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; padding: 11px 16px; background: var(--c-surface-2);
+    color: var(--c-text-soft); font-weight: 500; border-bottom: 1px solid var(--c-border);
+    white-space: nowrap; position: sticky; top: 0;
+  }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--c-border); color: var(--c-text); vertical-align: middle; }
+  tbody tr:hover { background: var(--c-surface-2); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.id-cell, td.center { font-family: var(--font-mono); font-size: 12px; color: var(--c-text-mute); }
+  td.actions { white-space: nowrap; display: flex; gap: 6px; }
+  td.actions .btn { padding: 4px 10px; font-size: 12px; }
+  .truncate { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ---------- Tags / Badges ---------- */
+  .tag {
+    display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 12px;
+    font-size: 12px; font-weight: 500; line-height: 1.6;
+  }
+  .tag-success { background: var(--c-success-soft); color: var(--c-success); }
+  .tag-danger  { background: var(--c-danger-soft);  color: var(--c-danger); }
+  .tag-warn    { background: var(--c-warn-soft);    color: var(--c-warn); }
+  .tag-info    { background: var(--c-info-soft);    color: var(--c-info); }
+  .tag-muted   { background: var(--c-muted-soft);    color: var(--c-muted); }
+  .tag-primary { background: var(--c-primary-soft);  color: var(--c-primary); }
+
+  /* ---------- Pagination ---------- */
+  .pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; background: var(--c-surface-2); border-top: 1px solid var(--c-border);
+    flex-wrap: wrap; gap: 10px;
+  }
+  .pagination .info { font-size: 12px; color: var(--c-text-mute); }
+  .pagination .controls { display: flex; gap: 6px; align-items: center; }
+  .pagination .controls .btn { padding: 5px 12px; }
+  .pagination .page-num { padding: 0 12px; font-weight: 600; color: var(--c-primary); font-size: 13px; }
+
+  /* ---------- Empty / Loading / Error ---------- */
+  .state-box { padding: 60px 20px; text-align: center; color: var(--c-text-mute); }
+  .state-box .emoji { font-size: 40px; margin-bottom: 12px; opacity: .7; }
+  .state-box .text { font-size: 14px; }
+  .state-box.error .emoji { color: var(--c-danger); }
+
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite;
+    display: inline-block;
+  }
+  .spinner.dark { border-color: rgba(15,107,84,0.2); border-top-color: var(--c-primary); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Toast ---------- */
+  .toast-wrap {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+  .toast {
+    background: var(--c-surface); padding: 12px 18px; border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg); border-left: 3px solid var(--c-primary);
+    font-size: 13px; min-width: 240px; max-width: 380px; animation: slidein .25s ease;
+    pointer-events: auto;
+  }
+  .toast.success { border-left-color: var(--c-success); }
+  .toast.error { border-left-color: var(--c-danger); }
+  .toast.warn { border-left-color: var(--c-warn); }
+  @keyframes slidein { from { transform: translateX(110%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ---------- Modal ---------- */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15, 30, 25, 0.5); backdrop-filter: blur(2px);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+  }
+  .modal-mask.active { display: flex; animation: fade .2s ease; }
+  .modal {
+    background: var(--c-surface); border-radius: var(--radius-lg); width: 100%; max-width: 560px;
+    box-shadow: var(--shadow-lg); overflow: hidden; animation: modalin .2s ease;
+  }
+  @keyframes modalin { from { transform: translateY(10px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-size: 16px; font-weight: 600; }
+  .modal-close { font-size: 22px; color: var(--c-text-mute); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: var(--c-surface-2); color: var(--c-text); }
+  .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+  .modal-body .detail-row { display: flex; padding: 8px 0; border-bottom: 1px dashed var(--c-border); font-size: 13px; }
+  .modal-body .detail-row:last-child { border: none; }
+  .modal-body .detail-row .k { width: 110px; color: var(--c-text-mute); flex-shrink: 0; }
+  .modal-body .detail-row .v { color: var(--c-text); flex: 1; word-break: break-all; }
+  .modal-body textarea {
+    width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); resize: vertical; font-family: inherit;
+  }
+  .modal-body textarea:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(15, 107, 84, 0.12); }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--c-border); display: flex; justify-content: flex-end; gap: 10px; background: var(--c-surface-2); }
+  .section-label { font-size: 12px; color: var(--c-text-mute); margin-bottom: 6px; margin-top: 14px; font-weight: 500; }
+  .section-label:first-child { margin-top: 0; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 768px) {
+    .app-header { padding: 0 16px; }
+    .tabs { padding: 0 8px; overflow-x: auto; }
+    .tab { padding: 12px 14px; white-space: nowrap; }
+    .content { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .stat-card { padding: 14px; }
+    .stat-card .value { font-size: 22px; }
+    .search-input { width: 100%; }
+    .toolbar { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== LOGIN ============================== -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="logo">邻</div>
+      <h1>邻里圈 · 管理后台</h1>
+      <p>Community Administration Console</p>
+    </div>
+    <div class="field">
+      <label>管理员账号</label>
+      <input type="text" id="loginUser" placeholder="请输入用户名" autocomplete="username" value="admin" />
+    </div>
+    <div class="field">
+      <label>登录密码</label>
+      <input type="password" id="loginPass" placeholder="请输入密码" autocomplete="current-password" value="admin123" />
+    </div>
+    <div class="login-actions">
+      <button class="btn btn-primary" id="btnLogin" onclick="handleLogin(false)">
+        <span id="loginText">登录</span>
+      </button>
+      <button class="btn btn-ghost" onclick="handleLogin(true)">快速登录</button>
+    </div>
+    <div class="login-tip">
+      💡 <b>快速登录</b> 调用 <code>POST /api/admin/login-mock</code>，用于本地联调；<br>
+      <b>登录</b> 调用 <code>POST /api/admin/login</code>，需真实账号密码。
+    </div>
+  </div>
+</div>
+
+<!-- ============================== APP ============================== -->
+<div class="app" id="appView">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">邻</div>
+      <div>
+        <div class="title">邻里圈管理后台</div>
+        <div class="sub">Community Admin Console</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-user">
+        <div class="avatar" id="adminAvatar">A</div>
+        <span id="adminName">管理员</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="handleLogout()">退出登录</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 数据看板</button>
+    <button class="tab" data-tab="audit" onclick="switchTab('audit')">📝 内容审核<span class="badge" id="badgeAudit" style="display:none">0</span></button>
+    <button class="tab" data-tab="users" onclick="switchTab('users')">👥 用户管理</button>
+    <button class="tab" data-tab="verify" onclick="switchTab('verify')">✅ 认证审核<span class="badge" id="badgeVerify" style="display:none">0</span></button>
+    <button class="tab" data-tab="reports" onclick="switchTab('reports')">🚩 举报处理<span class="badge" id="badgeReports" style="display:none">0</span></button>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- =========== Dashboard =========== -->
+    <section class="tab-panel active" id="panel-dashboard">
+      <div class="page-title">数据看板</div>
+      <div class="page-desc">社区运营核心指标概览</div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="state-box"><div class="spinner dark"></div><div class="text" style="margin-top:8px">加载中...</div></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;" id="dashboardExtra">
+        <div class="table-card">
+          <div class="card-head"><h3>📌 最新动态</h3><span class="meta" id="latestMeta">—</span></div>
+          <div id="latestList"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="table-card">
+          <div class="card-head"><h3>⚡ 待处理事项</h3></div>
+          <div id="pendingList" style="padding:8px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========== Content Audit =========== -->
+    <section class="tab-panel" id="panel-audit">
+      <div class="page-title">内容审核</div>
+      <div class="page-desc">审核社区动态帖子与评论</div>
+
+      <!-- Posts Audit -->
+      <div class="table-card">
+        <div class="card-head">
+          <h3>📋 帖子审核</h3>
+          <span class="meta" id="postsAuditMeta">—</span>
+        </div>
+        <div class="toolbar" style="padding:12px 18px; border-bottom:1px solid var(--c-border); margin:0;">
+          <select class="filter-select" id="postAuditFilter" onchange="resetAndLoadPostsAudit()">
+            <option value="0">待审核</option>
+            <option value="1">已通过</option>
+            <option value="2">已拒绝</option>
+            <option value="">全部</option>
+          </select>
+          <div class="grow"></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadPostsAudit()">🔄 刷新</button>
+        </div>
+        <div class="table-wrap">
+          <div id="postsAuditTable"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="pagination" id="postsAuditPager"></div>
+      </div>
+
+      <!-- Comments Audit -->
+      <div class="table-card">
+        <div class="card-head">
+          <h3>💬 评论审核</h3>
+          <span class="meta" id="commentsAuditMeta">—</span>
+        </div>
+        <div class="toolbar" style="padding:12px 18px; border-bottom:1px solid var(--c-border); margin:0;">
+          <select class="filter-select" id="commentAuditFilter" onchange="resetAndLoadCommentsAudit()">
+            <option value="0">待审核</option>
+            <option value="1">已通过</option>
+            <option value="2">已拒绝</option>
+            <option value="">全部</option>
+          </select>
+          <div class="grow"></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadCommentsAudit()">🔄 刷新</button>
+        </div>
+        <div class="table-wrap">
+          <div id="commentsAuditTable"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="pagination" id="commentsAuditPager"></div>
+      </div>
+    </section>
+
+    <!-- =========== User Management =========== -->
+    <section class="tab-panel" id="panel-users">
+      <div class="page-title">用户管理</div>
+      <div class="page-desc">查看与管理社区用户</div>
+
+      <div class="table-card">
+        <div class="card-head">
+          <h3>👥 用户列表</h3>
+          <span class="meta" id="usersMeta">—</span>
+        </div>
+        <div class="toolbar" style="padding:12px 18px; border-bottom:1px solid var(--c-border); margin:0;">
+          <input class="search-input" id="userKeyword" placeholder="搜索昵称 / 手机号..." onkeydown="if(event.key==='Enter')searchUsers()" />
+          <button class="btn btn-primary btn-sm" onclick="searchUsers()">🔍 搜索</button>
+          <div class="grow"></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers()">🔄 刷新</button>
+        </div>
+        <div class="table-wrap">
+          <div id="usersTable"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="pagination" id="usersPager"></div>
+      </div>
+    </section>
+
+    <!-- =========== Verification Review =========== -->
+    <section class="tab-panel" id="panel-verify">
+      <div class="page-title">认证审核</div>
+      <div class="page-desc">审核用户实名 / 身份认证申请</div>
+
+      <div class="table-card">
+        <div class="card-head">
+          <h3>📋 待审核认证</h3>
+          <span class="meta" id="verifyMeta">—</span>
+        </div>
+        <div class="toolbar" style="padding:12px 18px; border-bottom:1px solid var(--c-border); margin:0;">
+          <button class="btn btn-primary btn-sm" onclick="loadVerifications()">🔄 刷新</button>
+          <div class="grow"></div>
+        </div>
+        <div class="table-wrap">
+          <div id="verifyTable"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="pagination" id="verifyPager"></div>
+      </div>
+    </section>
+
+    <!-- =========== Report Review =========== -->
+    <section class="tab-panel" id="panel-reports">
+      <div class="page-title">举报处理</div>
+      <div class="page-desc">处理用户举报的帖子、评论与用户</div>
+
+      <div class="table-card">
+        <div class="card-head">
+          <h3>🚩 举报列表</h3>
+          <span class="meta" id="reportsMeta">—</span>
+        </div>
+        <div class="toolbar" style="padding:12px 18px; border-bottom:1px solid var(--c-border); margin:0;">
+          <select class="filter-select" id="reportStatusFilter" onchange="resetAndLoadReports()">
+            <option value="0">待处理</option>
+            <option value="1">已处理(有效)</option>
+            <option value="2">已处理(无效)</option>
+            <option value="">全部</option>
+          </select>
+          <select class="filter-select" id="reportTypeFilter" onchange="resetAndLoadReports()">
+            <option value="">全部类型</option>
+            <option value="1">帖子</option>
+            <option value="2">评论</option>
+            <option value="3">用户</option>
+          </select>
+          <div class="grow"></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadReports()">🔄 刷新</button>
+        </div>
+        <div class="table-wrap">
+          <div id="reportsTable"><div class="state-box"><div class="spinner dark"></div></div></div>
+        </div>
+        <div class="pagination" id="reportsPager"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================== MODAL ============================== -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">详情</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<!-- ============================== TOASTS ============================== -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ====================================================================
+ *  邻里圈 · 管理后台  -  Vanilla JS
+ * ==================================================================== */
+
+const API_BASE = '/api/admin';
+const TOKEN_KEY = 'linliquan_admin_token';
+const ADMIN_KEY = 'linliquan_admin_info';
+
+/* ---------- State ---------- */
+const state = {
+  postsAudit: { list: [], total: 0, page: 1, pageSize: 10, status: 0 },
+  commentsAudit: { list: [], total: 0, page: 1, pageSize: 10, status: 0 },
+  users: { list: [], total: 0, page: 1, pageSize: 10, keyword: '' },
+  verify: { list: [], total: 0, page: 1, pageSize: 10 },
+  reports: { list: [], total: 0, page: 1, pageSize: 10, status: '0', targetType: '' },
+  dashboard: null,
+};
+
+let loadedTabs = new Set();
+
+/* ---------- HTTP ---------- */
+async function request(path, options = {}) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  let res;
+  try {
+    res = await fetch(API_BASE + path, { ...options, headers });
+  } catch (e) {
+    throw new Error('网络请求失败：' + e.message);
+  }
+
+  let data;
+  const text = await res.text();
+  try { data = text ? JSON.parse(text) : {}; }
+  catch { throw new Error('响应解析失败 (HTTP ' + res.status + ')'); }
+
+  if (!res.ok || data.success === false) {
+    const msg = data.message || ('请求失败 (HTTP ' + res.status + ')');
+    if (res.status === 401) { handleLogout(true); }
+    throw new Error(msg);
+  }
+  return data;
+}
+
+function authHeaders() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+/* ---------- Toast ---------- */
+function toast(msg, type = 'info', duration = 3000) {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warn' ? 'warn' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(110%)'; setTimeout(() => el.remove(), 250); }, duration);
+}
+
+/* ---------- Auth ---------- */
+async function handleLogin(isMock) {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const btn = document.getElementById('btnLogin');
+  const txt = document.getElementById('loginText');
+
+  if (!isMock && (!user || !pass)) { toast('请输入账号和密码', 'warn'); return; }
+
+  btn.disabled = true; txt.innerHTML = '<span class="spinner"></span> 登录中...';
+  try {
+    const path = isMock ? '/login-mock' : '/login';
+    const body = isMock ? {} : { username: user, password: pass };
+    const resp = await request(path, { method: 'POST', body: JSON.stringify(body) });
+    const token = resp.data && resp.data.token;
+    if (!token) throw new Error('未返回 token');
+    localStorage.setItem(TOKEN_KEY, token);
+    if (resp.data.admin) localStorage.setItem(ADMIN_KEY, JSON.stringify(resp.data.admin));
+    toast('登录成功', 'success');
+    enterApp();
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; txt.textContent = '登录';
+  }
+}
+
+function handleLogout(silent) {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ADMIN_KEY);
+  document.getElementById('appView').classList.remove('active');
+  document.getElementById('loginView').style.display = 'flex';
+  if (!silent) toast('已退出登录', 'info');
+  loadedTabs.clear();
+}
+
+function enterApp() {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appView').classList.add('active');
+  const admin = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
+  const name = admin.nickname || admin.username || admin.name || '管理员';
+  document.getElementById('adminName').textContent = name;
+  document.getElementById('adminAvatar').textContent = (name || 'A').charAt(0).toUpperCase();
+  loadedTabs.clear();
+  switchTab('dashboard');
+}
+
+/* ---------- Tabs ---------- */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+
+  if (loadedTabs.has(tab)) return;
+  loadedTabs.add(tab);
+
+  if (tab === 'dashboard') loadDashboard();
+  else if (tab === 'audit') { loadPostsAudit(); loadCommentsAudit(); }
+  else if (tab === 'users') loadUsers();
+  else if (tab === 'verify') loadVerifications();
+  else if (tab === 'reports') loadReports();
+}
+
+/* ====================================================================
+ *  DASHBOARD
+ * ==================================================================== */
+async function loadDashboard() {
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = '<div class="state-box"><div class="spinner dark"></div><div class="text" style="margin-top:8px">加载统计数据...</div></div>';
+  try {
+    const resp = await request('/dashboard');
+    const d = resp.data || {};
+    state.dashboard = d;
+    renderDashboard(d);
+    // 顺带刷新举报待处理数角标
+    loadReportBadge();
+  } catch (e) {
+    grid.innerHTML = '<div class="state-box error"><div class="emoji">⚠️</div><div class="text">' + escapeHtml(e.message) + '</div><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="loadDashboard()">重试</button></div>';
+  }
+}
+
+function renderDashboard(d) {
+  const cards = [
+    { label: '用户总数',     value: d.totalUsers ?? d.userTotal ?? 0,    delta: d.todayNewUsers != null ? ('今日 +' + d.todayNewUsers) : null, icon: '👥', cls: 'green' },
+    { label: '已认证用户',   value: d.verifiedUsers ?? 0,                delta: d.totalUsers ? (percent(d.verifiedUsers, d.totalUsers) + ' 占比') : null, icon: '✅', cls: 'teal' },
+    { label: '待认证审核',   value: d.pendingVerifications ?? 0,         delta: null, icon: '⏳', cls: 'amber' },
+    { label: '帖子总数',     value: d.totalPosts ?? 0,                   delta: d.todayNewPosts != null ? ('今日 +' + d.todayNewPosts) : null, icon: '📝', cls: 'blue' },
+    { label: '待审帖子',     value: d.pendingPosts ?? d.pendingPostAudit ?? 0, delta: null, icon: '🔍', cls: 'orange' },
+    { label: '订单总数',     value: d.totalOrders ?? 0,                  delta: null, icon: '🛒', cls: 'green' },
+    { label: '评论总数',     value: d.totalComments ?? 0,                delta: null, icon: '💬', cls: 'teal' },
+    { label: '今日新增用户', value: d.todayNewUsers ?? 0,                delta: null, icon: '🆕', cls: 'orange' },
+  ];
+
+  document.getElementById('statsGrid').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="icon ${c.cls}">${c.icon}</div>
+      <div class="label">${c.label}</div>
+      <div class="value">${formatNum(c.value)}</div>
+      ${c.delta ? `<div class="delta up">${c.delta}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Update tab badges
+  const pendingPosts = d.pendingPosts ?? d.pendingPostAudit ?? 0;
+  const pendingVerif = d.pendingVerifications ?? 0;
+  setBadge('badgeAudit', pendingPosts);
+  setBadge('badgeVerify', pendingVerif);
+
+  // Pending list
+  const pend = document.getElementById('pendingList');
+  pend.innerHTML = `
+    <div style="padding:14px 18px; display:flex; flex-direction:column; gap:10px;">
+      ${pendingRow('待审帖子', pendingPosts, 'audit')}
+      ${pendingRow('待认证审核', pendingVerif, 'verify')}
+      <div style="font-size:12px; color:var(--c-text-mute); padding-top:6px;">提示：点击上方「内容审核 / 认证审核」标签进行处理。</div>
+    </div>
+  `;
+
+  // Latest list (use dashboard data if provided)
+  const latest = d.latestPosts || d.recentPosts || [];
+  const latestList = document.getElementById('latestList');
+  if (latest.length === 0) {
+    latestList.innerHTML = '<div class="state-box"><div class="emoji">📭</div><div class="text">暂无最新动态</div></div>';
+    document.getElementById('latestMeta').textContent = '0 条';
+  } else {
+    document.getElementById('latestMeta').textContent = latest.length + ' 条';
+    latestList.innerHTML = '<table><tbody>' + latest.slice(0, 6).map(p => `
+      <tr>
+        <td><div class="truncate">${escapeHtml(p.title || p.content || '(无标题)')}</div></td>
+        <td style="width:120px"><span class="tag tag-info">${escapeHtml(p.authorNickname || p.author || '匿名')}</span></td>
+        <td style="width:130px; text-align:right; color:var(--c-text-mute); font-size:12px;">${formatTime(p.createdAt)}</td>
+      </tr>`).join('') + '</tbody></table>';
+  }
+}
+
+function pendingRow(label, count, tab) {
+  return `<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--c-surface-2); border-radius:8px; border:1px solid var(--c-border);">
+    <span style="font-size:13px; color:var(--c-text-soft);">${label}</span>
+    <span style="display:flex; align-items:center; gap:10px;">
+      <span class="tag ${count > 0 ? 'tag-warn' : 'tag-muted'}">${count}</span>
+      <button class="btn btn-ghost btn-sm" onclick="switchTab('${tab}')">去处理 →</button>
+    </span>
+  </div>`;
+}
+
+function setBadge(id, n) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (n && n > 0) { el.style.display = 'inline-block'; el.textContent = n > 99 ? '99+' : n; }
+  else el.style.display = 'none';
+}
+
+/* ====================================================================
+ *  POSTS AUDIT
+ * ==================================================================== */
+function resetAndLoadPostsAudit() {
+  state.postsAudit.page = 1;
+  state.postsAudit.status = document.getElementById('postAuditFilter').value;
+  loadPostsAudit();
+}
+
+async function loadPostsAudit() {
+  const s = state.postsAudit;
+  const tbl = document.getElementById('postsAuditTable');
+  tbl.innerHTML = '<div class="state-box"><div class="spinner dark"></div></div>';
+  try {
+    const q = new URLSearchParams({ page: s.page, pageSize: s.pageSize });
+    if (s.status !== '') q.set('status', s.status);
+    const resp = await request('/posts/audit?' + q.toString());
+    const data = resp.data || {};
+    s.list = data.list || [];
+    s.total = data.total || 0;
+    renderPostsAudit();
+  } catch (e) {
+    tbl.innerHTML = errorBox(e.message, 'loadPostsAudit()');
+    document.getElementById('postsAuditPager').innerHTML = '';
+    document.getElementById('postsAuditMeta').textContent = '—';
+  }
+}
+
+function renderPostsAudit() {
+  const s = state.postsAudit;
+  const tbl = document.getElementById('postsAuditTable');
+  document.getElementById('postsAuditMeta').textContent = '共 ' + s.total + ' 条';
+
+  if (s.list.length === 0) {
+    tbl.innerHTML = '<div class="state-box"><div class="emoji">📭</div><div class="text">没有符合条件的帖子</div></div>';
+    document.getElementById('postsAuditPager').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>标题</th><th>作者</th><th>类型</th>
+        <th>状态</th><th>审核状态</th><th style="text-align:right">操作</th>
+      </tr></thead>
+      <tbody>
+        ${s.list.map(p => `
+          <tr>
+            <td class="id-cell">${escapeHtml(p.id ?? p.postId ?? '')}</td>
+            <td><div class="truncate">${escapeHtml(p.title || '(无标题)')}</div></td>
+            <td>${escapeHtml(p.authorNickname || p.author || p.userId || '—')}</td>
+            <td>${postTypeTag(p.type ?? p.postType)}</td>
+            <td>${postStatusTag(p.status)}</td>
+            <td>${auditStatusTag(p.auditStatus ?? p.audit)}</td>
+            <td class="actions" style="justify-content:flex-end;">
+              <button class="btn btn-success btn-sm" onclick="auditPost('${p.id ?? p.postId}', true)">通过</button>
+              <button class="btn btn-danger btn-sm" onclick="auditPost('${p.id ?? p.postId}', false)">拒绝</button>
+              <button class="btn btn-ghost btn-sm" onclick="viewPost(${JSON.stringify(p).replace(/"/g, '&quot;')})">查看</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+  renderPager('postsAuditPager', s, loadPostsAudit);
+}
+
+async function auditPost(postId, pass) {
+  if (!postId) return toast('缺少帖子ID', 'warn');
+  let reason = '';
+  if (!pass) {
+    reason = await promptReason('拒绝帖子', '请输入拒绝原因（可选）');
+    if (reason === null) return; // cancelled
+  }
+  try {
+    await request('/posts/' + postId + '/audit', { method: 'POST', body: JSON.stringify({ pass: pass, reason: reason || '' }) });
+    toast(pass ? '已通过审核' : '已拒绝帖子', 'success');
+    loadPostsAudit();
+    loadDashboard();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function viewPost(p) {
+  const rows = [
+    ['帖子ID', p.id ?? p.postId],
+    ['标题', p.title],
+    ['内容', p.content],
+    ['作者', p.authorNickname || p.author || p.userId],
+    ['类型', p.type ?? p.postType],
+    ['状态', p.status],
+    ['审核状态', p.auditStatus ?? p.audit],
+    ['创建时间', formatTime(p.createdAt)],
+    ['更新时间', formatTime(p.updatedAt)],
+  ].filter(r => r[1] != null && r[1] !== '');
+  openDetailModal('帖子详情', rows);
+}
+
+/* ====================================================================
+ *  COMMENTS AUDIT
+ * ==================================================================== */
+function resetAndLoadCommentsAudit() {
+  state.commentsAudit.page = 1;
+  state.commentsAudit.status = document.getElementById('commentAuditFilter').value;
+  loadCommentsAudit();
+}
+
+async function loadCommentsAudit() {
+  const s = state.commentsAudit;
+  const tbl = document.getElementById('commentsAuditTable');
+  tbl.innerHTML = '<div class="state-box"><div class="spinner dark"></div></div>';
+  try {
+    const q = new URLSearchParams({ page: s.page, pageSize: s.pageSize });
+    if (s.status !== '') q.set('status', s.status);
+    const resp = await request('/comments/audit?' + q.toString());
+    const data = resp.data || {};
+    s.list = data.list || [];
+    s.total = data.total || 0;
+    renderCommentsAudit();
+  } catch (e) {
+    tbl.innerHTML = errorBox(e.message, 'loadCommentsAudit()');
+    document.getElementById('commentsAuditPager').innerHTML = '';
+    document.getElementById('commentsAuditMeta').textContent = '—';
+  }
+}
+
+function renderCommentsAudit() {
+  const s = state.commentsAudit;
+  const tbl = document.getElementById('commentsAuditTable');
+  document.getElementById('commentsAuditMeta').textContent = '共 ' + s.total + ' 条';
+
+  if (s.list.length === 0) {
+    tbl.innerHTML = '<div class="state-box"><div class="emoji">📭</div><div class="text">没有符合条件的评论</div></div>';
+    document.getElementById('commentsAuditPager').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>内容</th><th>评论者</th><th>所属帖子</th>
+        <th>审核状态</th><th style="text-align:right">操作</th>
+      </tr></thead>
+      <tbody>
+        ${s.list.map(c => `
+          <tr>
+            <td class="id-cell">${escapeHtml(c.id ?? c.commentId ?? '')}</td>
+            <td><div class="truncate" style="max-width:340px;">${escapeHtml(c.content || '(无内容)')}</div></td>
+            <td>${escapeHtml(c.authorNickname || c.author || c.userId || '—')}</td>
+            <td class="id-cell">${escapeHtml(c.postId ?? '—')}</td>
+            <td>${auditStatusTag(c.auditStatus ?? c.audit)}</td>
+            <td class="actions" style="justify-content:flex-end;">
+              <button class="btn btn-success btn-sm" onclick="auditComment('${c.id ?? c.commentId}', true)">通过</button>
+              <button class="btn btn-danger btn-sm" onclick="auditComment('${c.id ?? c.commentId}', false)">拒绝</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+  renderPager('commentsAuditPager', s, loadCommentsAudit);
+}
+
+async function auditComment(commentId, pass) {
+  if (!commentId) return toast('缺少评论ID', 'warn');
+  let reason = '';
+  if (!pass) {
+    reason = await promptReason('拒绝评论', '请输入拒绝原因（可选）');
+    if (reason === null) return;
+  }
+  try {
+    await request('/comments/' + commentId + '/audit', { method: 'POST', body: JSON.stringify({ pass: pass, reason: reason || '' }) });
+    toast(pass ? '已通过审核' : '已拒绝评论', 'success');
+    loadCommentsAudit();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+/* ====================================================================
+ *  USERS
+ * ==================================================================== */
+function searchUsers() {
+  state.users.keyword = document.getElementById('userKeyword').value.trim();
+  state.users.page = 1;
+  loadUsers();
+}
+
+async function loadUsers() {
+  const s = state.users;
+  const tbl = document.getElementById('usersTable');
+  tbl.innerHTML = '<div class="state-box"><div class="spinner dark"></div></div>';
+  try {
+    const q = new URLSearchParams({ page: s.page, pageSize: s.pageSize });
+    if (s.keyword) q.set('keyword', s.keyword);
+    const resp = await request('/users?' + q.toString());
+    const data = resp.data || {};
+    s.list = data.list || [];
+    s.total = data.total || 0;
+    renderUsers();
+  } catch (e) {
+    tbl.innerHTML = errorBox(e.message, 'loadUsers()');
+    document.getElementById('usersPager').innerHTML = '';
+    document.getElementById('usersMeta').textContent = '—';
+  }
+}
+
+function renderUsers() {
+  const s = state.users;
+  const tbl = document.getElementById('usersTable');
+  document.getElementById('usersMeta').textContent = '共 ' + s.total + ' 条';
+
+  if (s.list.length === 0) {
+    tbl.innerHTML = '<div class="state-box"><div class="emoji">🔍</div><div class="text">未找到匹配用户</div></div>';
+    document.getElementById('usersPager').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>昵称</th><th>手机号(哈希)</th>
+        <th>认证状态</th><th>封禁状态</th><th style="text-align:right">操作</th>
+      </tr></thead>
+      <tbody>
+        ${s.list.map(u => {
+          const banned = (u.banned === true || u.banStatus === 'BANNED' || u.status === 'BANNED');
+          const verified = (u.verified === true || u.verificationStatus === 'VERIFIED' || u.verifyStatus === 'VERIFIED');
+          const pending = (u.verificationStatus === 'PENDING' || u.verifyStatus === 'PENDING');
+          return `
+          <tr>
+            <td class="id-cell">${escapeHtml(u.id ?? u.userId ?? '')}</td>
+            <td>${escapeHtml(u.nickname || u.name || '—')}</td>
+            <td class="id-cell">${escapeHtml(maskHash(u.phoneHash || u.phone || '—'))}</td>
+            <td>${verified ? '<span class="tag tag-success">已认证</span>' : pending ? '<span class="tag tag-warn">待审核</span>' : '<span class="tag tag-muted">未认证</span>'}</td>
+            <td>${banned ? '<span class="tag tag-danger">已封禁</span>' : '<span class="tag tag-success">正常</span>'}</td>
+            <td class="actions" style="justify-content:flex-end;">
+              ${banned
+                ? `<button class="btn btn-success btn-sm" onclick="toggleBan('${u.id ?? u.userId}', false)">解封</button>`
+                : `<button class="btn btn-danger btn-sm" onclick="toggleBan('${u.id ?? u.userId}', true)">封禁</button>`}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  renderPager('usersPager', s, loadUsers);
+}
+
+async function toggleBan(userId, ban) {
+  if (!userId) return toast('缺少用户ID', 'warn');
+  let reason = '';
+  if (ban) {
+    reason = await promptReason('封禁用户', '请输入封禁原因（必填）', true);
+    if (reason === null) return;
+    if (!reason.trim()) { toast('请输入封禁原因', 'warn'); return; }
+  }
+  const action = ban ? 'ban' : 'unban';
+  try {
+    const opts = { method: 'POST' };
+    if (ban) { opts.body = JSON.stringify({ reason: reason.trim() }); }
+    await request('/users/' + userId + '/' + action, opts);
+    toast(ban ? '已封禁用户' : '已解封用户', 'success');
+    loadUsers();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+/* ====================================================================
+ *  VERIFICATIONS
+ * ==================================================================== */
+async function loadVerifications() {
+  const s = state.verify;
+  const tbl = document.getElementById('verifyTable');
+  tbl.innerHTML = '<div class="state-box"><div class="spinner dark"></div></div>';
+  try {
+    const q = new URLSearchParams({ page: s.page, pageSize: s.pageSize });
+    const resp = await request('/verifications?' + q.toString());
+    const data = resp.data || {};
+    s.list = data.list || [];
+    s.total = data.total || 0;
+    renderVerifications();
+  } catch (e) {
+    tbl.innerHTML = errorBox(e.message, 'loadVerifications()');
+    document.getElementById('verifyPager').innerHTML = '';
+    document.getElementById('verifyMeta').textContent = '—';
+  }
+}
+
+function renderVerifications() {
+  const s = state.verify;
+  const tbl = document.getElementById('verifyTable');
+  document.getElementById('verifyMeta').textContent = '共 ' + s.total + ' 条';
+
+  if (s.list.length === 0) {
+    tbl.innerHTML = '<div class="state-box"><div class="emoji">✅</div><div class="text">没有待审核的认证申请</div></div>';
+    document.getElementById('verifyPager').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>用户ID</th><th>昵称</th><th>真实姓名</th><th>证件号</th>
+        <th>申请时间</th><th style="text-align:right">操作</th>
+      </tr></thead>
+      <tbody>
+        ${s.list.map(v => `
+          <tr>
+            <td class="id-cell">${escapeHtml(v.userId ?? v.id ?? '')}</td>
+            <td>${escapeHtml(v.nickname || v.username || '—')}</td>
+            <td>${escapeHtml(v.realName || v.name || '—')}</td>
+            <td class="id-cell">${escapeHtml(maskIdCard(v.idCard || v.idNumber))}</td>
+            <td class="id-cell">${formatTime(v.applyTime || v.createdAt)}</td>
+            <td class="actions" style="justify-content:flex-end;">
+              <button class="btn btn-success btn-sm" onclick="verifyUser('${v.userId ?? v.id}', true)">通过</button>
+              <button class="btn btn-danger btn-sm" onclick="verifyUser('${v.userId ?? v.id}', false)">拒绝</button>
+              <button class="btn btn-ghost btn-sm" onclick="viewVerify(${JSON.stringify(v).replace(/"/g, '&quot;')})">详情</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+  renderPager('verifyPager', s, loadVerifications);
+}
+
+async function verifyUser(userId, approve) {
+  if (!userId) return toast('缺少用户ID', 'warn');
+  let reason = '';
+  if (!approve) {
+    reason = await promptReason('拒绝认证', '请输入拒绝原因（可选）');
+    if (reason === null) return;
+  }
+  try {
+    const path = '/verifications/' + userId + '/' + (approve ? 'approve' : 'reject');
+    const opts = { method: 'POST' };
+    if (!approve) opts.body = JSON.stringify({ reason: reason || '' });
+    await request(path, opts);
+    toast(approve ? '已通过认证' : '已拒绝认证', 'success');
+    loadVerifications();
+    loadDashboard();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function viewVerify(v) {
+  const rows = [
+    ['用户ID', v.userId ?? v.id],
+    ['昵称', v.nickname || v.username],
+    ['真实姓名', v.realName || v.name],
+    ['证件号', v.idCard || v.idNumber],
+    ['证件类型', v.idType],
+    ['认证类型', v.verifyType],
+    ['申请时间', formatTime(v.applyTime || v.createdAt)],
+    ['附件', v.attachmentUrl ? ('<a href="' + v.attachmentUrl + '" target="_blank">查看</a>') : null],
+  ].filter(r => r[1] != null && r[1] !== '');
+  openDetailModal('认证详情', rows);
+}
+
+/* ====================================================================
+ *  REPORTS
+ * ==================================================================== */
+function resetAndLoadReports() {
+  state.reports.page = 1;
+  state.reports.status = document.getElementById('reportStatusFilter').value;
+  state.reports.targetType = document.getElementById('reportTypeFilter').value;
+  loadReports();
+}
+
+async function loadReports() {
+  const s = state.reports;
+  const tbl = document.getElementById('reportsTable');
+  tbl.innerHTML = '<div class="state-box"><div class="spinner dark"></div></div>';
+  try {
+    const q = new URLSearchParams({ page: s.page, pageSize: s.pageSize });
+    if (s.status !== '') q.set('status', s.status);
+    if (s.targetType !== '') q.set('targetType', s.targetType);
+    const resp = await request('/reports?' + q.toString());
+    const data = resp.data || {};
+    s.list = data.list || [];
+    s.total = data.total || 0;
+    renderReports();
+    loadReportBadge();
+  } catch (e) {
+    tbl.innerHTML = errorBox(e.message, 'loadReports()');
+    document.getElementById('reportsPager').innerHTML = '';
+    document.getElementById('reportsMeta').textContent = '—';
+  }
+}
+
+function renderReports() {
+  const s = state.reports;
+  const tbl = document.getElementById('reportsTable');
+  document.getElementById('reportsMeta').textContent = '共 ' + s.total + ' 条';
+
+  if (s.list.length === 0) {
+    tbl.innerHTML = '<div class="state-box"><div class="emoji">🚩</div><div class="text">没有符合条件的举报</div></div>';
+    document.getElementById('reportsPager').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>举报人</th><th>类型</th><th>目标ID</th>
+        <th>原因</th><th>描述</th><th>状态</th><th style="text-align:right">操作</th>
+      </tr></thead>
+      <tbody>
+        ${s.list.map(r => {
+          const isPending = r.status === 0 || r.status === '0';
+          return `
+          <tr>
+            <td class="id-cell">${escapeHtml(r.id ?? '')}</td>
+            <td>${escapeHtml(r.reporterName || r.reporterId || '—')}</td>
+            <td>${reportTypeTag(r.targetType)}</td>
+            <td class="id-cell">${escapeHtml(r.targetId ?? '')}</td>
+            <td>${reportReasonTag(r.reason)}</td>
+            <td><div class="truncate" style="max-width:240px;">${escapeHtml(r.description || '—')}</div></td>
+            <td>${reportStatusTag(r.status)}</td>
+            <td class="actions" style="justify-content:flex-end;">
+              <button class="btn btn-ghost btn-sm" onclick="viewReport(${JSON.stringify(r).replace(/"/g, '&quot;')})">查看</button>
+              ${isPending ? `
+                <button class="btn btn-success btn-sm" onclick="handleReport('${r.id}', true)">处理有效</button>
+                <button class="btn btn-danger btn-sm" onclick="handleReport('${r.id}', false)">处理无效</button>
+              ` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  renderPager('reportsPager', s, loadReports);
+}
+
+async function loadReportBadge() {
+  try {
+    const q = new URLSearchParams({ page: 1, pageSize: 1, status: 0 });
+    const resp = await request('/reports?' + q.toString());
+    const pending = (resp.data && resp.data.total) || 0;
+    setBadge('badgeReports', pending);
+  } catch (e) { /* ignore */ }
+}
+
+function viewReport(r) {
+  const rows = [
+    ['举报ID', r.id],
+    ['举报人', r.reporterName || r.reporterId],
+    ['目标类型', reportTypeText(r.targetType)],
+    ['目标ID', r.targetId],
+    ['目标标题', r.targetTitle],
+    ['目标内容', r.targetContent],
+    ['举报原因', reportReasonText(r.reason)],
+    ['补充描述', r.description],
+    ['状态', reportStatusText(r.status)],
+    ['处理备注', r.handleRemark],
+    ['处理人', r.handlerName || r.handledBy],
+    ['处理时间', formatTime(r.handledAt)],
+    ['举报时间', formatTime(r.createdAt)],
+  ].filter(row => row[1] != null && row[1] !== '');
+  openDetailModal('举报详情', rows);
+}
+
+async function handleReport(reportId, valid) {
+  if (!reportId) return toast('缺少举报ID', 'warn');
+  const title = valid ? '处理举报 - 标记为有效' : '处理举报 - 标记为无效';
+  const hint = valid ? '处理有效请输入处理备注（有效将对目标内容进行处置，选填）' : '处理无效请输入处理备注（选填）';
+  const remark = await promptReason(title, hint);
+  if (remark === null) return; // cancelled
+  try {
+    await request('/reports/' + reportId + '/handle', {
+      method: 'POST',
+      body: JSON.stringify({ valid: valid, handleRemark: remark || '' })
+    });
+    toast(valid ? '已处理为有效' : '已处理为无效', 'success');
+    loadReports();
+    loadDashboard();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function reportTypeText(t) {
+  const v = Number(t);
+  if (v === 1) return '帖子';
+  if (v === 2) return '评论';
+  if (v === 3) return '用户';
+  return String(t ?? '—');
+}
+
+function reportTypeTag(t) {
+  const v = Number(t);
+  const map = { 1: ['帖子', 'tag-info'], 2: ['评论', 'tag-primary'], 3: ['用户', 'tag-warn'] };
+  const m = map[v] || ['未知', 'tag-muted'];
+  return '<span class="tag ' + m[1] + '">' + m[0] + '</span>';
+}
+
+function reportReasonText(r) {
+  const v = Number(r);
+  const map = { 1: '垃圾广告', 2: '违法违规', 3: '色情低俗', 4: '侮辱谩骂', 5: '其他' };
+  return map[v] || (r != null ? String(r) : '—');
+}
+
+function reportReasonTag(r) {
+  const v = Number(r);
+  const map = {
+    1: ['垃圾广告', 'tag-warn'],
+    2: ['违法违规', 'tag-danger'],
+    3: ['色情低俗', 'tag-danger'],
+    4: ['侮辱谩骂', 'tag-warn'],
+    5: ['其他', 'tag-muted'],
+  };
+  const m = map[v] || ['未知', 'tag-muted'];
+  return '<span class="tag ' + m[1] + '">' + m[0] + '</span>';
+}
+
+function reportStatusText(s) {
+  const v = Number(s);
+  if (v === 0) return '待处理';
+  if (v === 1) return '已处理(有效)';
+  if (v === 2) return '已处理(无效)';
+  return String(s ?? '—');
+}
+
+function reportStatusTag(s) {
+  const v = Number(s);
+  if (v === 0) return '<span class="tag tag-warn">待处理</span>';
+  if (v === 1) return '<span class="tag tag-danger">已处理(有效)</span>';
+  if (v === 2) return '<span class="tag tag-muted">已处理(无效)</span>';
+  return '<span class="tag tag-muted">' + escapeHtml(s) + '</span>';
+}
+
+/* ====================================================================
+ *  PAGER
+ * ==================================================================== */
+function renderPager(elId, s, reload) {
+  const el = document.getElementById(elId);
+  const totalPages = Math.max(1, Math.ceil(s.total / s.pageSize));
+  const start = s.total === 0 ? 0 : (s.page - 1) * s.pageSize + 1;
+  const end = Math.min(s.page * s.pageSize, s.total);
+  el.innerHTML = `
+    <div class="info">显示 ${start} - ${end} 条，共 ${s.total} 条 · 第 ${s.page} / ${totalPages} 页</div>
+    <div class="controls">
+      <button class="btn btn-ghost btn-sm" ${s.page <= 1 ? 'disabled' : ''} onclick="gotoPage('${elId}', 1, ${reload.name})">«</button>
+      <button class="btn btn-ghost btn-sm" ${s.page <= 1 ? 'disabled' : ''} onclick="gotoPage('${elId}', ${s.page - 1}, ${reload.name})">‹</button>
+      <span class="page-num">${s.page} / ${totalPages}</span>
+      <button class="btn btn-ghost btn-sm" ${s.page >= totalPages ? 'disabled' : ''} onclick="gotoPage('${elId}', ${s.page + 1}, ${reload.name})">›</button>
+      <button class="btn btn-ghost btn-sm" ${s.page >= totalPages ? 'disabled' : ''} onclick="gotoPage('${elId}', ${totalPages}, ${reload.name})">»</button>
+    </div>
+  `;
+}
+
+function gotoPage(elId, page, reload) {
+  // Map pager element id back to its state slice
+  const map = {
+    postsAuditPager: state.postsAudit,
+    commentsAuditPager: state.commentsAudit,
+    usersPager: state.users,
+    verifyPager: state.verify,
+    reportsPager: state.reports,
+  };
+  const s = map[elId];
+  if (!s) return;
+  s.page = page;
+  reload();
+}
+
+/* ====================================================================
+ *  MODAL (detail + reason prompt)
+ * ==================================================================== */
+function openDetailModal(title, rows) {
+  document.getElementById('modalTitle').textContent = title;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = rows.map(r => `<div class="detail-row"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>`).join('');
+  document.getElementById('modalFoot').innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">关闭</button>`;
+  document.getElementById('modalMask').classList.add('active');
+}
+
+function promptReason(title, hint, required) {
+  return new Promise(resolve => {
+    document.getElementById('modalTitle').textContent = title;
+    const body = document.getElementById('modalBody');
+    body.innerHTML = `
+      <div class="section-label">${hint}${required ? ' <span style="color:var(--c-danger)">*</span>' : ''}</div>
+      <textarea id="reasonInput" placeholder="请输入原因..."></textarea>
+    `;
+    const foot = document.getElementById('modalFoot');
+    foot.innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal(); window.__reasonResolve(null);">取消</button>
+      <button class="btn btn-primary" id="confirmReason">确定</button>
+    `;
+    document.getElementById('modalMask').classList.add('active');
+    window.__reasonResolve = (v) => { resolve(v); delete window.__reasonResolve; };
+    document.getElementById('confirmReason').onclick = () => {
+      const v = document.getElementById('reasonInput').value;
+      closeModal();
+      window.__reasonResolve(v);
+    };
+    setTimeout(() => document.getElementById('reasonInput').focus(), 100);
+  });
+}
+
+function closeModal() {
+  document.getElementById('modalMask').classList.remove('active');
+}
+
+/* ====================================================================
+ *  Helpers
+ * ==================================================================== */
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function formatNum(n) {
+  if (n == null) return '0';
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function formatTime(t) {
+  if (!t) return '—';
+  let d;
+  if (typeof t === 'number') {
+    // If seconds, convert; if ms, keep
+    d = new Date(t < 1e12 ? t * 1000 : t);
+  } else if (typeof t === 'string') {
+    d = new Date(t.replace(/-/g, '/'));
+  } else return '—';
+  if (isNaN(d.getTime())) return String(t);
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function maskHash(h) {
+  if (!h || h === '—') return '—';
+  const s = String(h);
+  if (s.length <= 8) return s;
+  return s.substring(0, 6) + '****' + s.substring(s.length - 4);
+}
+
+function maskIdCard(id) {
+  if (!id) return '—';
+  const s = String(id);
+  if (s.length <= 8) return s;
+  return s.substring(0, 4) + '********' + s.substring(s.length - 4);
+}
+
+function percent(a, b) {
+  if (!b) return '0%';
+  return Math.round(a / b * 100) + '%';
+}
+
+function postTypeTag(t) {
+  const map = {
+    TEXT: ['文字', 'tag-info'],
+    IMAGE: ['图文', 'tag-primary'],
+    VIDEO: ['视频', 'tag-warn'],
+    ACTIVITY: ['活动', 'tag-success'],
+    HELP: ['求助', 'tag-danger'],
+    GOODS: ['二手', 'tag-muted'],
+  };
+  const m = map[(t || '').toUpperCase()] || ['其他', 'tag-muted'];
+  return `<span class="tag ${m[1]}">${m[0]}</span>`;
+}
+
+function postStatusTag(s) {
+  const v = (s || '').toString().toUpperCase();
+  if (v === 'NORMAL' || v === 'ACTIVE' || s === 1 || s === '1') return '<span class="tag tag-success">正常</span>';
+  if (v === 'HIDDEN' || v === 'DRAFT' || s === 0 || s === '0') return '<span class="tag tag-muted">隐藏</span>';
+  if (v === 'DELETED' || s === 2) return '<span class="tag tag-danger">已删除</span>';
+  return '<span class="tag tag-muted">' + escapeHtml(s) + '</span>';
+}
+
+function auditStatusTag(s) {
+  const v = (s || '').toString().toUpperCase();
+  if (v === 'PENDING' || s === 0 || s === '0') return '<span class="tag tag-warn">待审核</span>';
+  if (v === 'APPROVED' || v === 'PASS' || v === 'PASSED' || s === 1 || s === '1') return '<span class="tag tag-success">已通过</span>';
+  if (v === 'REJECTED' || v === 'REJECT' || v === 'FAIL' || s === 2 || s === '2') return '<span class="tag tag-danger">已拒绝</span>';
+  return '<span class="tag tag-muted">' + escapeHtml(s) + '</span>';
+}
+
+function errorBox(msg, retryFn) {
+  return `<div class="state-box error">
+    <div class="emoji">⚠️</div>
+    <div class="text">${escapeHtml(msg)}</div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="${retryFn}">重试</button>
+  </div>`;
+}
+
+/* ---------- Enter key submits login ---------- */
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(false); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+/* ---------- Close modal on mask click / ESC ---------- */
+document.getElementById('modalMask').addEventListener('click', e => { if (e.target.id === 'modalMask') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---------- Init ---------- */
+(function init() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) enterApp();
+  else document.getElementById('loginView').style.display = 'flex';
+})();
+</script>
+</body>
+</html>

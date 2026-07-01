@@ -145,4 +145,46 @@ public class JwtUtil {
     public static DecodedJWT decodeToken(String token) {
         return JWT.decode(token);
     }
+
+    private static final String CLAIM_IS_ADMIN = "isAdmin";
+    private static final String CLAIM_ADMIN_ID = "adminId";
+    private static final String CLAIM_ADMIN_USERNAME = "adminUsername";
+
+    /**
+     * 生成管理员Token
+     */
+    public static String generateAdminToken(Long adminId, String username) {
+        Date expireDate = Date.from(
+            LocalDateTime.now().plusSeconds(ACCESS_TOKEN_EXPIRE_SECONDS)
+                .atZone(ZoneId.systemDefault()).toInstant()
+        );
+        return JWT.create()
+                .withClaim(CLAIM_ADMIN_ID, adminId)
+                .withClaim(CLAIM_ADMIN_USERNAME, username)
+                .withClaim(CLAIM_IS_ADMIN, true)
+                .withClaim(CLAIM_CREATED_AT, System.currentTimeMillis())
+                .withExpiresAt(expireDate)
+                .sign(Algorithm.HMAC256(SECRET_KEY));
+    }
+
+    /**
+     * 从Token中提取管理员ID
+     */
+    public static Long getAdminIdFromToken(String token) {
+        DecodedJWT jwt = verifyToken(token);
+        return jwt.getClaim(CLAIM_ADMIN_ID).asLong();
+    }
+
+    /**
+     * 判断是否为管理员Token
+     */
+    public static boolean isAdminToken(String token) {
+        try {
+            DecodedJWT jwt = verifyToken(token);
+            Boolean isAdmin = jwt.getClaim(CLAIM_IS_ADMIN).asBoolean();
+            return isAdmin != null && isAdmin;
+        } catch (JWTVerificationException e) {
+            return false;
+        }
+    }
 }

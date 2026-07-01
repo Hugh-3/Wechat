@@ -1,0 +1,108 @@
+<!-- pages/points/index.wxml -->
+<!-- 积分中心页面 -->
+
+<view class="container">
+  <!-- 顶部积分展示 -->
+  <view class="points-header">
+    <view class="points-balance-section">
+      <text class="points-label">我的积分</text>
+      <text class="points-value">{{totalPoints}}</text>
+    </view>
+  </view>
+
+  <!-- Tab 栏 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      bindtap="onTabChange"
+      data-key="{{item.key}}"
+    >
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- 积分明细 -->
+  <view class="content-section" wx:if="{{activeTab === 'transactions'}}">
+    <view class="empty-tip" wx:if="{{transactions.length === 0 && !txnLoading}}">
+      <text>暂无积分明细</text>
+    </view>
+    <view class="txn-list">
+      <view class="txn-item" wx:for="{{transactions}}" wx:key="id">
+        <view class="txn-info">
+          <text class="txn-action">{{item.actionDesc}}</text>
+          <text class="txn-time">{{item.timeText}}</text>
+          <text class="txn-remark" wx:if="{{item.remark}}">{{item.remark}}</text>
+        </view>
+        <view class="txn-right">
+          <text class="txn-points {{item.type === 1 ? 'earn' : 'spend'}}">{{item.pointsText}}</text>
+          <text class="txn-balance">余额 {{item.balanceAfter}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{txnLoading}}"><text>加载中...</text></view>
+    <view class="load-more" wx:if="{{!txnHasMore && transactions.length > 0}}"><text>没有更多了</text></view>
+    <view class="load-more-btn" wx:if="{{txnHasMore && transactions.length > 0 && !txnLoading}}" bindtap="onTxnLoadMore">
+      <text>加载更多</text>
+    </view>
+  </view>
+
+  <!-- 积分商城 -->
+  <view class="content-section" wx:if="{{activeTab === 'shop'}}">
+    <view class="empty-tip" wx:if="{{items.length === 0 && !itemLoading}}">
+      <text>商城暂无商品</text>
+    </view>
+    <view class="items-grid">
+      <view class="item-card" wx:for="{{items}}" wx:key="id">
+        <image class="item-image" src="{{item.imageUrl || '/assets/default-gift.png'}}" mode="aspectFill" />
+        <view class="item-info">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-desc" wx:if="{{item.description}}">{{item.description}}</text>
+          <view class="item-meta">
+            <text class="item-points">{{item.pointsRequired}} 积分</text>
+            <text class="item-stock">库存 {{item.stock}}</text>
+          </view>
+        </view>
+        <button
+          class="exchange-btn {{item.stock <= 0 || totalPoints < item.pointsRequired ? 'disabled' : ''}}"
+          bindtap="onExchange"
+          data-item="{{item}}"
+          disabled="{{item.stock <= 0}}"
+        >
+          {{item.stock <= 0 ? '已兑完' : '兑换'}}
+        </button>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{itemLoading}}"><text>加载中...</text></view>
+    <view class="load-more" wx:if="{{!itemHasMore && items.length > 0}}"><text>没有更多了</text></view>
+    <view class="load-more-btn" wx:if="{{itemHasMore && items.length > 0 && !itemLoading}}" bindtap="onItemLoadMore">
+      <text>加载更多</text>
+    </view>
+  </view>
+
+  <!-- 兑换记录 -->
+  <view class="content-section" wx:if="{{activeTab === 'records'}}">
+    <view class="empty-tip" wx:if="{{records.length === 0 && !recordLoading}}">
+      <text>暂无兑换记录</text>
+    </view>
+    <view class="record-list">
+      <view class="record-item" wx:for="{{records}}" wx:key="id">
+        <image class="record-image" src="{{item.itemImageUrl || '/assets/default-gift.png'}}" mode="aspectFill" />
+        <view class="record-info">
+          <text class="record-name">{{item.itemName || '商品'}}</text>
+          <text class="record-time">{{item.timeText}}</text>
+        </view>
+        <view class="record-right">
+          <text class="record-cost">-{{item.pointsCost}} 积分</text>
+          <text class="record-status {{item.statusClass}}">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{recordLoading}}"><text>加载中...</text></view>
+    <view class="load-more" wx:if="{{!recordHasMore && records.length > 0}}"><text>没有更多了</text></view>
+    <view class="load-more-btn" wx:if="{{recordHasMore && records.length > 0 && !recordLoading}}" bindtap="onRecordLoadMore">
+      <text>加载更多</text>
+    </view>
+  </view>
+</view>

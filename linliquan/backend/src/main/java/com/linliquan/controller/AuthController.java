@@ -1,5 +1,6 @@
 package com.linliquan.controller;
 
+import com.linliquan.annotation.RateLimit;
 import com.linliquan.common.Result;
 import com.linliquan.common.ResultCode;
 import com.linliquan.model.entity.User;
@@ -20,6 +21,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
+    @RateLimit(maxRequests = 10, windowSeconds = 60)
     public Result<Map<String, Object>> login(@RequestParam String phone) {
         return authService.login(phone);
     }

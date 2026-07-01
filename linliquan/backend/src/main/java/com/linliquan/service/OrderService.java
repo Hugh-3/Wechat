@@ -31,6 +31,12 @@ public class OrderService {
     @Autowired
     private CacheService cacheService;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private PointService pointService;
+
     /**
      * 发布互助任务
      * 【红线强制】仅VERIFIED用户可发布
@@ -241,14 +247,16 @@ public class OrderService {
         }
 
         // 不能接自己的单
-        String sql = "SELECT user_id FROM orders WHERE id = :orderId";
+        String sql = "SELECT o.user_id, p.title FROM orders o INNER JOIN posts p ON o.post_id = p.id WHERE o.id = :orderId";
         Query checkQuery = entityManager.createNativeQuery(sql);
         checkQuery.setParameter("orderId", orderId);
         List<Object> result = checkQuery.getResultList();
         if (result.isEmpty()) {
             return Result.fail(ResultCode.NOT_FOUND);
         }
-        Long ownerId = ((Number) result.get(0)).longValue();
+        Object[] row = (Object[]) result.get(0);
+        Long ownerId = ((Number) row[0]).longValue();
+        String orderTitle = row[1] != null ? row[1].toString() : "";
         if (ownerId.equals(user.getId())) {
             return Result.fail(ResultCode.BAD_REQUEST);
         }
@@ -260,7 +268,87 @@ public class OrderService {
         updateQuery.setParameter("orderId", orderId);
         updateQuery.executeUpdate();
 
+        // 通知任务发布者有人接单
+        notificationService.sendOrderNotification(ownerId, user.getId(), orderTitle);
+
+        // 积分奖励：接单者 +20
+        pointService.addPoints(user.getId(), PointService.ORDER_ACCEPT,
+                "order_accept", "order", orderId, "接单");
+
         return Result.success(null);
+    }
+
+    /**
+     * 完成互助任务
+     * 将订单状态置为已完成（status=3），并通知双方可以互相评价
+     *
+     * 仅订单的发布者或帮助者可以触发完成，且订单必须处于"进行中"状态（status=2）
+     */
+    @Transactional
+    public Result<Void> completeOrder(Long orderId, User user) {
+        if (orderId == null) {
+            return Result.fail(ResultCode.BAD_REQUEST);
+        }
+
+        // 查询订单及其关联任务标题
+        String sql = "SELECT o.user_id, o.helper_user_id, o.status, p.title " +
+                "FROM orders o INNER JOIN posts p ON o.post_id = p.id WHERE o.id = :orderId";
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("orderId", orderId);
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = query.getResultList();
+        if (rows.isEmpty()) {
+            return Result.fail(ResultCode.NOT_FOUND);
+        }
+        Object[] row = rows.get(0);
+        Long ownerId = row[0] != null ? ((Number) row[0]).longValue() : null;
+        Long helperId = row[1] != null ? ((Number) row[1]).longValue() : null;
+        Integer currentStatus = row[2] != null ? ((Number) row[2]).intValue() : null;
+        String orderTitle = row[3] != null ? row[3].toString() : "";
+
+        // 校验当前用户为订单参与方
+        boolean isOwner = ownerId != null && ownerId.equals(user.getId());
+        boolean isHelper = helperId != null && helperId.equals(user.getId());
+        if (!isOwner && !isHelper) {
+            return Result.fail(ResultCode.FORBIDDEN_UNVERIFIED.getCode(), "无权操作此订单");
+        }
+
+        // 校验订单状态为进行中
+        if (currentStatus == null || currentStatus != 2) {
+            return Result.fail(ResultCode.BAD_REQUEST.getCode(), "仅进行中的订单可完成");
+        }
+        if (helperId == null) {
+            return Result.fail(ResultCode.BAD_REQUEST.getCode(), "该订单尚无帮助者，无法完成");
+        }
+
+        // 更新状态为已完成
+        String updateSql = "UPDATE orders SET status = 3, updated_at = NOW() WHERE id = :orderId";
+        Query updateQuery = entityManager.createNativeQuery(updateSql);
+        updateQuery.setParameter("orderId", orderId);
+        updateQuery.executeUpdate();
+
+        // 通知双方可以互相评价
+        String title = "任务已完成，可以评价了";
+        String content = "您的任务「" + truncate(orderTitle, 20) + "」已完成，请尽快给对方评价";
+        notificationService.sendNotification(ownerId, NotificationService.TYPE_ORDER,
+                title, content, "order", orderId);
+        notificationService.sendNotification(helperId, NotificationService.TYPE_ORDER,
+                title, content, "order", orderId);
+
+        return Result.success(null);
+    }
+
+    /**
+     * 截断字符串，超长部分以省略号表示
+     */
+    private String truncate(String text, int maxLen) {
+        if (text == null) {
+            return "";
+        }
+        if (text.length() <= maxLen) {
+            return text;
+        }
+        return text.substring(0, maxLen) + "...";
     }
 
     /**

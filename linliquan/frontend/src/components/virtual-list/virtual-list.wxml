@@ -1,0 +1,7 @@
+<view class="virtual-list-container" style="height: {{height}}px;" bindscroll="onScroll">
+  <view class="virtual-list-spacer" style="height: {{totalHeight}}px; position: relative;">
+    <view wx:for="{{visibleItems}}" wx:key="{{keyField}}" style="position: absolute; top: {{item._top}}px; width: 100%;">
+      <slot name="item" data="{{item}}"></slot>
+    </view>
+  </view>
+</view>

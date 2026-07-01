@@ -44,6 +44,9 @@ public class PostService {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private PointService pointService;
+
     /**
      * 【核心方法】发布动态
      *
@@ -125,6 +128,15 @@ public class PostService {
 
         // 【关键】Cache Aside策略：先写DB，再删缓存
         cacheService.invalidatePostListCache(String.valueOf(postType), null);
+
+        // 积分奖励：动态+10，互助任务+15
+        if (postType == 2) {
+            pointService.addPoints(user.getId(), PointService.ORDER_PUBLISH,
+                    "order_publish", "post", savedPost.getId(), "发布互助任务");
+        } else {
+            pointService.addPoints(user.getId(), PointService.POST_CREATE,
+                    "post_create", "post", savedPost.getId(), "发布动态");
+        }
 
         return Result.success(savedPost);
     }
@@ -234,6 +246,12 @@ public class PostService {
 
             post.setLikeCount(post.getLikeCount() + 1);
             postRepository.save(post);
+
+            // 积分奖励：帖子作者获得点赞 +5（不给自己点赞加分）
+            if (!post.getUserId().equals(user.getId())) {
+                pointService.addPoints(post.getUserId(), PointService.LIKE_RECEIVED,
+                        "like_received", "post", postId, "获得点赞");
+            }
         } else if (!liked && exists) {
             // 取消点赞
             postLikeRepository.deleteByPostIdAndUserId(postId, user.getId());

@@ -1,5 +1,7 @@
 package com.linliquan.config;
 
+import com.linliquan.interceptor.AdminInterceptor;
+import com.linliquan.interceptor.RateLimitInterceptor;
 import com.linliquan.interceptor.VerificationInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private VerificationInterceptor verificationInterceptor;
 
+    @Autowired
+    private AdminInterceptor adminInterceptor;
+
+    @Autowired
+    private RateLimitInterceptor rateLimitInterceptor;
+
     /**
      * 注册拦截器
      */
@@ -43,6 +51,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     "/actuator/**",
                     "/health"
                 );
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/api/admin/**")
+                .excludePathPatterns(
+                    // 放行管理员登录接口
+                    "/api/admin/login",
+                    "/api/admin/login-mock"
+                );
+        // 【P2性能优化】限流拦截器，对所有API接口生效
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns("/api/v1/**");
     }
 
     /**

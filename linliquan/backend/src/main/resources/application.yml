@@ -73,6 +73,10 @@ security:
     lock-duration-minutes: 30
     fail-count-window-seconds: 1800
 
+# 管理后台配置
+admin:
+  default-password: ${ADMIN_DEFAULT_PASSWORD:admin123}
+
 # 加密配置（KMS密钥ID，从环境变量读取）
 encryption:
   kms-key-id: ${KMS_KEY_ID:}

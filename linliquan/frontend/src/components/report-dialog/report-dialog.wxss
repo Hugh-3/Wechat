@@ -1,0 +1,179 @@
+/* components/report-dialog/report-dialog.wxss */
+
+.report-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 32rpx;
+}
+
+.report-dialog {
+  width: 100%;
+  max-width: 640rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+  animation: dialogIn 0.2s ease;
+}
+
+@keyframes dialogIn {
+  from { transform: translateY(20rpx) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---------- Header ---------- */
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.report-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1a2b25;
+}
+
+.report-close {
+  font-size: 48rpx;
+  color: #999;
+  line-height: 1;
+  padding: 0 8rpx;
+}
+
+/* ---------- Section ---------- */
+.report-section {
+  padding: 24rpx 32rpx;
+}
+
+.section-label {
+  font-size: 26rpx;
+  color: #5a6b64;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+/* ---------- Reason List ---------- */
+.reason-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.reason-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.reason-item:last-child {
+  border-bottom: none;
+}
+
+.reason-item.active text {
+  color: #0f6b54;
+  font-weight: 500;
+}
+
+.reason-item .radio {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #cbd5d1;
+  border-radius: 50%;
+  margin-right: 24rpx;
+  position: relative;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.reason-item .radio.checked {
+  border-color: #0f6b54;
+  background: #0f6b54;
+}
+
+.reason-item .radio.checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16rpx;
+  height: 16rpx;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.reason-item text {
+  font-size: 30rpx;
+  color: #1a2b25;
+}
+
+/* ---------- Textarea ---------- */
+.report-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  background: #f8faf9;
+  border: 1rpx solid #e3e8e6;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #1a2b25;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.textarea-count {
+  text-align: right;
+  font-size: 22rpx;
+  color: #8a9990;
+  margin-top: 8rpx;
+}
+
+/* ---------- Footer ---------- */
+.report-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 32rpx 32rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.report-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-btn::after {
+  border: none;
+}
+
+.report-btn.cancel {
+  background: #f4f6f5;
+  color: #5a6b64;
+}
+
+.report-btn.confirm {
+  background: #0f6b54;
+  color: #ffffff;
+}
+
+.report-btn.confirm.disabled {
+  opacity: 0.6;
+}

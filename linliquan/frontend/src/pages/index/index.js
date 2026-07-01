@@ -4,6 +4,7 @@
 const { getCurrentUserStatus, getStatusConfig, canWrite } = require('../../utils/auth');
 const postApi = require('../../api/post');
 const { formatRelativeTime } = require('../../utils/time');
+const imageUtil = require('../../utils/image');
 
 Page({
   data: {
@@ -58,8 +59,11 @@ Page({
       const res = await postApi.getList(type, this.data.page, this.data.pageSize);
       const result = res.data || { list: [], total: 0 };
 
+      // 【P2性能优化】列表图片使用中等尺寸压缩URL，减少流量与渲染开销
+      // 数据量较大时可接入 virtual-list 组件实现虚拟滚动（见 components/virtual-list）
       const processedList = (result.list || []).map(item => ({
         ...item,
+        images: (item.images || []).map(img => imageUtil.getMediumUrl(img)),
         timeText: formatRelativeTime(item.createdAt),
         liked: item.liked || false
       }));

@@ -1,0 +1,128 @@
+<!-- pages/review/index.wxml -->
+<!-- 评价页面 -->
+
+<view class="container">
+  <!-- 顶部说明 -->
+  <view class="header">
+    <text class="header-title">评价互助任务</text>
+    <text class="header-sub">完成后双方均可获得积分奖励</text>
+  </view>
+
+  <!-- 评价表单 -->
+  <view class="form-section" wx:if="{{canReview}}">
+    <view class="form-item">
+      <text class="form-label">评分</text>
+      <view class="stars">
+        <view
+          wx:for="{{stars}}"
+          wx:key="*this"
+          class="star {{rating >= item ? 'active' : ''}}"
+          bindtap="onStarTap"
+          data-star="{{item}}"
+        >
+          ★
+        </view>
+      </view>
+      <text class="rating-text" wx:if="{{rating > 0}}">{{rating}}星</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">评价内容</text>
+      <textarea
+        class="form-textarea"
+        placeholder="请填写您的评价（最多500字）"
+        value="{{content}}"
+        bindinput="onContentInput"
+        maxlength="500"
+      />
+      <text class="word-count">{{content.length}}/500</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">图片（最多3张）</text>
+      <view class="image-upload">
+        <view class="upload-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}">
+          <text class="upload-icon">+</text>
+        </view>
+        <view
+          wx:for="{{images}}"
+          wx:key="index"
+          class="uploaded-image"
+        >
+          <image
+            src="{{item}}"
+            mode="aspectFill"
+            bindtap="previewFormImage"
+            data-index="{{index}}"
+          />
+          <view class="delete-icon" bindtap="removeImage" data-index="{{index}}">×</view>
+        </view>
+      </view>
+    </view>
+
+    <button class="btn-submit" bindtap="submitReview" loading="{{submitting}}" disabled="{{submitting}}">
+      提交评价
+    </button>
+  </view>
+
+  <!-- 不可评价提示 -->
+  <view class="cannot-review" wx:elif="{{!loading && canReviewReason}}">
+    <text class="cannot-icon">🔒</text>
+    <text class="cannot-text">{{canReviewReason}}</text>
+  </view>
+
+  <!-- 已有评价列表 -->
+  <view class="reviews-section">
+    <view class="section-title">
+      <text>全部评价（{{reviews.length}}）</text>
+    </view>
+
+    <view class="review-empty" wx:if="{{reviews.length === 0 && !loading}}">
+      <text class="empty-text">暂无评价</text>
+    </view>
+
+    <view class="review-item" wx:for="{{reviews}}" wx:key="id" wx:for-item="review" wx:for-index="rIndex">
+      <view class="review-header">
+        <image class="reviewer-avatar" src="{{review.reviewerAvatar || '/assets/default-avatar.png'}}" />
+        <view class="reviewer-info">
+          <text class="reviewer-name">{{review.reviewerName || '匿名用户'}}</text>
+          <view class="review-meta">
+            <view class="review-stars">
+              <text
+                wx:for="{{review.stars}}"
+                wx:key="*this"
+                wx:for-item="filled"
+                class="mini-star {{filled ? 'active' : ''}}"
+              >★</text>
+            </view>
+            <text class="review-time">{{review.timeText}}</text>
+          </view>
+        </view>
+        <view class="role-badge {{review.role === 1 ? 'role-owner' : 'role-helper'}}">
+          {{review.role === 1 ? '发布者' : '帮助者'}}
+        </view>
+      </view>
+
+      <view class="review-content" wx:if="{{review.content}}">
+        <text>{{review.content}}</text>
+      </view>
+
+      <view class="review-images" wx:if="{{review.images && review.images.length > 0}}">
+        <image
+          wx:for="{{review.images}}"
+          wx:key="index"
+          wx:for-item="img"
+          wx:for-index="imgIndex"
+          src="{{img}}"
+          mode="aspectFill"
+          class="review-image"
+          bindtap="previewReviewImage"
+          data-index="{{rIndex}}"
+          data-img-index="{{imgIndex}}"
+        />
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-placeholder"></view>
+</view>

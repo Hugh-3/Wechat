@@ -1,0 +1,308 @@
+/* pages/review/index.wxss */
+
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40rpx;
+}
+
+/* 顶部说明 */
+.header {
+  background: linear-gradient(135deg, #07c160, #07a857);
+  padding: 40rpx 30rpx;
+  color: #fff;
+}
+
+.header-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.header-sub {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+/* 评价表单 */
+.form-section {
+  background: #fff;
+  margin: 20rpx;
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  display: block;
+  font-weight: 500;
+}
+
+/* 星级选择 */
+.stars {
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  font-size: 60rpx;
+  color: #ddd;
+  margin-right: 16rpx;
+  transition: color 0.2s;
+}
+
+.star.active {
+  color: #ffb400;
+}
+
+.rating-text {
+  font-size: 24rpx;
+  color: #ffb400;
+  margin-top: 10rpx;
+  display: block;
+}
+
+.form-textarea {
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 28rpx;
+  border: 1rpx solid #eee;
+  height: 200rpx;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.word-count {
+  font-size: 22rpx;
+  color: #999;
+  text-align: right;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* 图片上传 */
+.image-upload {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.upload-btn {
+  width: 180rpx;
+  height: 180rpx;
+  border: 2rpx dashed #ddd;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.upload-icon {
+  font-size: 60rpx;
+  color: #ccc;
+}
+
+.uploaded-image {
+  width: 180rpx;
+  height: 180rpx;
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.uploaded-image image {
+  width: 100%;
+  height: 100%;
+}
+
+.delete-icon {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+}
+
+/* 提交按钮 */
+.btn-submit {
+  width: 100%;
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  padding: 24rpx 0;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-top: 20rpx;
+}
+
+.btn-submit[disabled] {
+  background: #9ed8b3;
+  color: #fff;
+}
+
+/* 不可评价提示 */
+.cannot-review {
+  background: #fff;
+  margin: 20rpx;
+  border-radius: 20rpx;
+  padding: 60rpx 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cannot-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.cannot-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 评价列表 */
+.reviews-section {
+  background: #fff;
+  margin: 20rpx;
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.review-empty {
+  padding: 60rpx 0;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.review-item {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+}
+
+.reviewer-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #f0f0f0;
+}
+
+.reviewer-info {
+  flex: 1;
+}
+
+.reviewer-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.review-meta {
+  display: flex;
+  align-items: center;
+}
+
+.review-stars {
+  display: flex;
+  margin-right: 20rpx;
+}
+
+.mini-star {
+  font-size: 24rpx;
+  color: #ddd;
+  margin-right: 4rpx;
+}
+
+.mini-star.active {
+  color: #ffb400;
+}
+
+.review-time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.role-badge {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.role-badge.role-owner {
+  background: #e8f4ff;
+  color: #1890ff;
+}
+
+.role-badge.role-helper {
+  background: #fff4e8;
+  color: #fa8c16;
+}
+
+.review-content {
+  margin-top: 16rpx;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 16rpx;
+}
+
+.review-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+  margin-bottom: 16rpx;
+  background: #f0f0f0;
+}
+
+.bottom-placeholder {
+  height: 40rpx;
+}

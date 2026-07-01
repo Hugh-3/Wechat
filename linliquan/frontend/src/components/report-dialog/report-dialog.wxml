@@ -1,0 +1,51 @@
+<!-- components/report-dialog/report-dialog.wxml -->
+<view class="report-mask" wx:if="{{show}}" catchtap="close">
+  <view class="report-dialog" catchtap="noop">
+    <!-- 标题 -->
+    <view class="report-header">
+      <text class="report-title">举报</text>
+      <text class="report-close" catchtap="close">×</text>
+    </view>
+
+    <!-- 原因选择 -->
+    <view class="report-section">
+      <view class="section-label">请选择举报原因</view>
+      <view class="reason-list">
+        <view
+          wx:for="{{reasonOptions}}"
+          wx:key="value"
+          class="reason-item {{selectedReason === item.value ? 'active' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="onReasonSelect"
+        >
+          <view class="radio {{selectedReason === item.value ? 'checked' : ''}}"></view>
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 补充描述 -->
+    <view class="report-section">
+      <view class="section-label">补充描述（选填）</view>
+      <textarea
+        class="report-textarea"
+        value="{{description}}"
+        placeholder="请描述具体违规情况，便于我们更快处理"
+        maxlength="200"
+        auto-height
+        bindinput="onDescriptionInput"
+      />
+      <view class="textarea-count">{{description.length}}/200</view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="report-footer">
+      <button class="report-btn cancel" catchtap="close">取消</button>
+      <button
+        class="report-btn confirm {{submitting ? 'disabled' : ''}}"
+        catchtap="submit"
+        disabled="{{submitting}}"
+      >{{submitting ? '提交中...' : '提交举报'}}</button>
+    </view>
+  </view>
+</view>

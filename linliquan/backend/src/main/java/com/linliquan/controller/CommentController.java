@@ -1,5 +1,6 @@
 package com.linliquan.controller;
 
+import com.linliquan.annotation.RateLimit;
 import com.linliquan.common.Result;
 import com.linliquan.model.entity.Comment;
 import com.linliquan.model.entity.User;
@@ -38,6 +39,7 @@ public class CommentController {
      * 【红线强制】已接入权限拦截器
      */
     @PostMapping
+    @RateLimit(maxRequests = 30, windowSeconds = 60)
     public Result<Comment> createComment(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         User currentUser = (User) request.getAttribute("currentUser");
         Long postId = params.get("postId") != null ? Long.valueOf(params.get("postId").toString()) : null;

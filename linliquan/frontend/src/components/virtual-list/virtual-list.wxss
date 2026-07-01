@@ -1,0 +1,7 @@
+.virtual-list-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.virtual-list-spacer {
+  width: 100%;
+}

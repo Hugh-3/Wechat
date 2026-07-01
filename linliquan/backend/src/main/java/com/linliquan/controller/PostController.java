@@ -1,5 +1,6 @@
 package com.linliquan.controller;
 
+import com.linliquan.annotation.RateLimit;
 import com.linliquan.common.Result;
 import com.linliquan.model.entity.Post;
 import com.linliquan.model.entity.User;
@@ -27,6 +28,7 @@ public class PostController {
      * 【红线强制】已接入权限拦截器，非VERIFIED用户返回403
      */
     @PostMapping
+    @RateLimit(maxRequests = 20, windowSeconds = 60)
     public Result<Post> createPost(HttpServletRequest request, @RequestBody @Valid Map<String, Object> params) {
         User currentUser = (User) request.getAttribute("currentUser");
         return postService.createPost(currentUser, params);

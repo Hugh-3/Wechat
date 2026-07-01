@@ -1,5 +1,6 @@
 package com.linliquan.controller;
 
+import com.linliquan.annotation.RateLimit;
 import com.linliquan.common.Result;
 import com.linliquan.model.entity.Order;
 import com.linliquan.model.entity.User;
@@ -26,6 +27,7 @@ public class OrderController {
      * 【红线强制】已接入权限拦截器
      */
     @PostMapping
+    @RateLimit(maxRequests = 20, windowSeconds = 60)
     public Result<Order> createOrder(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         User currentUser = (User) request.getAttribute("currentUser");
         return orderService.createOrder(currentUser, params);
@@ -51,5 +53,15 @@ public class OrderController {
     public Result<Void> acceptOrder(HttpServletRequest request, @PathVariable Long id) {
         User currentUser = (User) request.getAttribute("currentUser");
         return orderService.acceptOrder(id, currentUser);
+    }
+
+    /**
+     * 【写操作】完成订单（完成后双方可互相评价）
+     * 【红线强制】已接入权限拦截器
+     */
+    @PostMapping("/{id}/complete")
+    public Result<Void> completeOrder(HttpServletRequest request, @PathVariable Long id) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        return orderService.completeOrder(id, currentUser);
     }
 }

@@ -17,6 +17,14 @@ public enum ResultCode {
     NOT_FOUND(404, "资源不存在"),
     CONFLICT(409, "资源冲突"),
 
+    // 管理后台相关
+    FORBIDDEN_ADMIN_REQUIRED(40304, "需要管理员权限"),
+    ADMIN_LOGIN_FAILED(40305, "管理员登录失败"),
+    ADMIN_DISABLED(40306, "管理员账号已禁用"),
+    CONTENT_AUDIT_PENDING(40307, "内容正在审核中"),
+
+    TOO_MANY_REQUESTS(429, "请求过于频繁，请稍后再试"),
+
     // 5xx 服务端错误
     INTERNAL_ERROR(500, "服务器内部错误"),
     SERVICE_UNAVAILABLE(503, "服务暂不可用");

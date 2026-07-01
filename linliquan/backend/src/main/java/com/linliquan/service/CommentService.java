@@ -34,6 +34,12 @@ public class CommentService {
     @Autowired
     private CacheService cacheService;
 
+    @Autowired
+    private PointService pointService;
+
+    @Autowired
+    private NotificationService notificationService;
+
     /**
      * 发表评论
      * 【红线强制】状态校验
@@ -88,6 +94,15 @@ public class CommentService {
 
         // 清除缓存
         cacheService.invalidatePostCommentsCache(postId);
+
+        // 通知帖子作者收到新评论
+        notificationService.sendCommentNotification(post.getUserId(), user.getId(), post.getTitle());
+
+        // 积分奖励：帖子作者收到评论 +3（不给自己评论加分）
+        if (!post.getUserId().equals(user.getId())) {
+            pointService.addPoints(post.getUserId(), PointService.COMMENT_RECEIVED,
+                    "comment_received", "post", postId, "收到评论");
+        }
 
         return Result.success(savedComment);
     }
