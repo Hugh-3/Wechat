@@ -31,6 +31,7 @@ public class CacheService {
     private static final String PREFIX_POSTS_LIST = "posts:list:";
     private static final String PREFIX_POSTS_NEARBY = "posts:nearby:";
     private static final String PREFIX_ORDERS_NEARBY = "orders:nearby:";
+    private static final String PREFIX_COMMENTS_LIST = "comments:list:";
     private static final String PREFIX_USER = "user:";
     private static final String PREFIX_TOKEN = "token:";
 
@@ -137,6 +138,16 @@ public class CacheService {
     public void invalidateOrderNearbyCache(double lat, double lng, double radius) {
         String cacheKey = generateNearbyCacheKey(lat, lng, radius);
         delete(cacheKey);
+    }
+
+    /**
+     * 【核心方法】评论变更后，删除相关评论列表缓存
+     */
+    public void invalidatePostCommentsCache(Long postId) {
+        // 删除该帖子的前N页评论缓存
+        for (int i = 1; i <= 5; i++) {
+            delete(String.format("%s%d:page:%d", PREFIX_COMMENTS_LIST, postId, i));
+        }
     }
 
     /**

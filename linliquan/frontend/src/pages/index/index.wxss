@@ -6,6 +6,37 @@
   background: #f5f5f5;
 }
 
+/* 认证引导条 */
+.auth-banner {
+  background: linear-gradient(135deg, #07c160 0%, #10b981 100%);
+  padding: 20rpx 30rpx;
+}
+
+.auth-banner-content {
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.auth-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.auth-text {
+  flex: 1;
+  font-size: 26rpx;
+  line-height: 1.4;
+}
+
+.auth-action {
+  font-size: 26rpx;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+}
+
 .status-bar {
   display: flex;
   justify-content: space-between;
@@ -152,10 +183,16 @@
   margin-right: 40rpx;
   color: #666;
   font-size: 24rpx;
+  transition: all 0.2s ease;
+}
+
+.action-item.liked {
+  color: #fa5151;
 }
 
 .action-item .icon {
   margin-right: 8rpx;
+  font-size: 28rpx;
 }
 
 .loading, .no-more, .empty {

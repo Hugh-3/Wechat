@@ -1,0 +1,121 @@
+<!-- pages/profile/index.wxml -->
+<!-- 个人中心页面 -->
+
+<view class="container">
+  <!-- 头部用户信息 -->
+  <view class="profile-header">
+    <view class="user-info-section" bindtap="onEditProfile">
+      <image class="user-avatar" src="{{userInfo.avatar || '/assets/default-avatar.png'}}" />
+      <view class="user-info">
+        <text class="user-name">{{userInfo.nickname || '微信用户'}}</text>
+        <view class="verification-badge {{verificationStatusClass}}">
+          <text class="badge-icon">{{verificationIcon}}</text>
+          <text class="badge-text">{{verificationText}}</text>
+        </view>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 认证状态卡片 -->
+  <view class="auth-card" wx:if="{{!isVerified}}" bindtap="goToAuth">
+    <view class="auth-card-content">
+      <view class="auth-icon-wrapper">
+        <text class="auth-icon">{{isPending ? '⏳' : '🔐'}}</text>
+      </view>
+      <view class="auth-info">
+        <text class="auth-title">{{isPending ? '认证审核中' : '完成业主认证'}}</text>
+        <text class="auth-desc">{{isPending ? '预计1个工作日内完成审核' : '认证后可发布内容、参与互动'}}</text>
+      </view>
+      <text class="auth-action">{{isPending ? '查看进度' : '去认证'}}</text>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-card">
+    <view class="stats-item" bindtap="goToMyPosts">
+      <text class="stats-number">{{stats.postCount}}</text>
+      <text class="stats-label">我的发布</text>
+    </view>
+    <view class="stats-divider"></view>
+    <view class="stats-item" bindtap="goToMyLikes">
+      <text class="stats-number">{{stats.likeCount}}</text>
+      <text class="stats-label">获赞</text>
+    </view>
+    <view class="stats-divider"></view>
+    <view class="stats-item" bindtap="goToMyComments">
+      <text class="stats-number">{{stats.commentCount}}</text>
+      <text class="stats-label">评论</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-title">我的内容</view>
+    <view class="menu-list">
+      <view class="menu-item" bindtap="goToMyPosts">
+        <text class="menu-icon">📝</text>
+        <text class="menu-text">我发布的</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToMyHelps">
+        <text class="menu-icon">🤝</text>
+        <text class="menu-text">我的互助</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToMyFavorites">
+        <text class="menu-icon">⭐</text>
+        <text class="menu-text">我的收藏</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-title">设置与帮助</view>
+    <view class="menu-list">
+      <view class="menu-item" bindtap="goToAuth">
+        <text class="menu-icon">✅</text>
+        <text class="menu-text">业主认证</text>
+        <view class="menu-right">
+          <text class="menu-status {{verificationStatusClass}}">{{verificationText}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+      <view class="menu-item" bindtap="goToSettings">
+        <text class="menu-icon">⚙️</text>
+        <text class="menu-text">设置</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToHelp">
+        <text class="menu-icon">❓</text>
+        <text class="menu-text">帮助与反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于邻里圈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 调试区域（开发用） -->
+  <view class="debug-section">
+    <view class="debug-title">开发调试</view>
+    <view class="menu-list">
+      <view class="menu-item" bindtap="switchStatus">
+        <text class="menu-icon">🔄</text>
+        <text class="menu-text">切换认证状态（调试）</text>
+        <view class="menu-right">
+          <text class="menu-status">{{userStatusDesc}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-text">
+    <text>邻里圈 v1.0.0</text>
+  </view>
+</view>

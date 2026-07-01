@@ -2,8 +2,10 @@
   "pages": [
     "pages/index/index",
     "pages/helper/index",
+    "pages/profile/index",
     "pages/auth/index",
-    "pages/publish/index"
+    "pages/publish/index",
+    "pages/post-detail/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -28,6 +30,12 @@
         "text": "互助",
         "iconPath": "assets/tab/help.png",
         "selectedIconPath": "assets/tab/help-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/tab/profile.png",
+        "selectedIconPath": "assets/tab/profile-active.png"
       }
     ]
   },

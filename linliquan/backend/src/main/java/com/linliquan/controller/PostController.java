@@ -69,12 +69,13 @@ public class PostController {
     }
 
     /**
-     * 【写操作】点赞
+     * 【写操作】点赞/取消点赞
      * 【红线强制】已接入权限拦截器
      */
     @PostMapping("/{id}/like")
-    public Result<Void> likePost(HttpServletRequest request, @PathVariable Long id) {
+    public Result<?> toggleLike(HttpServletRequest request, @PathVariable Long id, @RequestBody Map<String, Object> params) {
         User currentUser = (User) request.getAttribute("currentUser");
-        return postService.likePost(id, currentUser);
+        boolean liked = params.get("liked") != null && Boolean.parseBoolean(params.get("liked").toString());
+        return postService.toggleLike(id, currentUser, liked);
     }
 }

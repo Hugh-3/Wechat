@@ -2,6 +2,17 @@
 <!-- 信息广场页面 -->
 
 <view class="container">
+  <!-- 认证状态提示条（未认证/认证中显示） -->
+  <view class="auth-banner" wx:if="{{!publishEnabled}}" bindtap="onAuthBannerTap">
+    <view class="auth-banner-content">
+      <text class="auth-icon">{{userStatus === 1 ? '⏳' : '🔐'}}</text>
+      <text class="auth-text">
+        {{userStatus === 1 ? '业主认证审核中，预计1个工作日内完成' : '认证业主即可发布内容、参与互动'}
+      </text>
+      <text class="auth-action">{{userStatus === 1 ? '查看进度' : '去认证'}}</text>
+    </view>
+  </view>
+
   <!-- 顶部状态栏（开发调试用） -->
   <view class="status-bar">
     <text class="status-text">当前状态：{{userStatusDesc}}</text>
@@ -30,7 +41,7 @@
           <image class="user-avatar" src="{{item.userAvatar}}" />
           <view class="user-info">
             <text class="user-name">{{item.userName}}</text>
-            <text class="post-time">{{item.createdAt}}</text>
+            <text class="post-time">{{item.timeText}}</text>
           </view>
           <text class="distance-tag" wx:if="{{item.distance}}">{{item.distance}}</text>
         </view>
@@ -46,11 +57,11 @@
 
         <!-- 互动栏 -->
         <view class="post-actions">
-          <view class="action-item" bindtap="onLikeTap" data-id="{{item.id}}">
-            <text class="icon">👍</text>
+          <view class="action-item {{item.liked ? 'liked' : ''}}" catchtap="onLikeTap" data-id="{{item.id}}">
+            <text class="icon">{{item.liked ? '❤️' : '🤍'}}</text>
             <text>{{item.likeCount}}</text>
           </view>
-          <view class="action-item" bindtap="onCommentTap" data-id="{{item.id}}">
+          <view class="action-item" catchtap="onCommentTap" data-id="{{item.id}}">
             <text class="icon">💬</text>
             <text>{{item.commentCount}}</text>
           </view>

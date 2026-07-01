@@ -1,0 +1,111 @@
+<!-- pages/post-detail/index.wxml -->
+<!-- 帖子详情页 -->
+
+<view class="container">
+  <scroll-view scroll-y class="scroll-content" wx:if="{{post}}">
+    <!-- 帖子内容 -->
+    <view class="post-detail">
+      <!-- 用户信息 -->
+      <view class="post-header">
+        <image class="user-avatar" src="{{post.userAvatar}}" />
+        <view class="user-info">
+          <text class="user-name">{{post.userName}}</text>
+          <text class="post-time">{{post.timeText}}</text>
+        </view>
+        <text class="distance-tag" wx:if="{{post.distance}}">{{post.distance}}</text>
+      </view>
+
+      <!-- 帖子标题 -->
+      <text class="post-title">{{post.title}}</text>
+
+      <!-- 帖子内容 -->
+      <text class="post-content">{{post.content}}</text>
+
+      <!-- 帖子图片 -->
+      <view class="post-images" wx:if="{{post.images && post.images.length > 0}}">
+        <image 
+          wx:for="{{post.images}}" 
+          wx:for-item="img" 
+          wx:key="index"
+          src="{{img}}" 
+          mode="widthFix" 
+          class="post-image"
+          bindtap="previewImage"
+          data-index="{{index}}"
+        />
+      </view>
+
+      <!-- 互动数据 -->
+      <view class="post-stats">
+        <text>{{post.viewCount}}次浏览</text>
+      </view>
+    </view>
+
+    <!-- 评论区标题 -->
+    <view class="comment-section-title">
+      <text class="title-text">评论 ({{commentCount}})</text>
+    </view>
+
+    <!-- 评论列表 -->
+    <view class="comment-list">
+      <block wx:for="{{comments}}" wx:key="id">
+        <view class="comment-item">
+          <image class="comment-avatar" src="{{item.userAvatar}}" />
+          <view class="comment-content">
+            <view class="comment-header">
+              <text class="comment-name">{{item.userName}}</text>
+              <text class="comment-time">{{item.timeText}}</text>
+            </view>
+            <text class="comment-text">{{item.content}}</text>
+            <view class="comment-actions">
+              <view class="comment-like {{item.liked ? 'liked' : ''}}" catchtap="onCommentLike" data-id="{{item.id}}">
+                <text>{{item.liked ? '❤️' : '🤍'}}</text>
+                <text wx:if="{{item.likeCount > 0}}">{{item.likeCount}}</text>
+              </view>
+              <text class="reply-btn" catchtap="onReply" data-name="{{item.userName}}">回复</text>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <!-- 空状态 -->
+      <view class="empty-comments" wx:if="{{comments.length === 0 && !loading}}">
+        <text class="empty-icon">💬</text>
+        <text class="empty-text">暂无评论，快来抢沙发~</text>
+      </view>
+
+      <!-- 加载中 -->
+      <view class="loading-more" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+    </view>
+
+    <view class="bottom-placeholder"></view>
+  </scroll-view>
+
+  <!-- 加载状态 -->
+  <view class="loading-page" wx:if="{{!post && loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 底部评论输入框 -->
+  <view class="comment-input-bar">
+    <input 
+      class="comment-input" 
+      placeholder="{{canComment ? '说点什么...' : '认证业主即可发表评论'}}"
+      value="{{commentText}}"
+      bindinput="onCommentInput"
+      confirm-type="send"
+      bindconfirm="submitComment"
+      disabled="{{!canComment}}"
+    />
+    <button 
+      class="send-btn {{canComment && commentText ? 'active' : ''}}" 
+      bindtap="submitComment"
+      disabled="{{!canComment || !commentText || submitting}}"
+      loading="{{submitting}}"
+    >
+      发送
+    </button>
+  </view>
+</view>

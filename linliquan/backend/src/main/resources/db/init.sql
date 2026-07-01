@@ -86,6 +86,54 @@ CREATE INDEX idx_orders_location_gist ON orders USING GIST(location);
 CREATE INDEX idx_orders_status ON orders(status);
 
 -- ==========================================
+-- comments表（评论表）
+-- ==========================================
+CREATE TABLE comments (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    parent_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
+    reply_to_user_id BIGINT REFERENCES users(id),
+    content TEXT NOT NULL,
+    like_count INT NOT NULL DEFAULT 0,
+    status SMALLINT NOT NULL DEFAULT 1,               -- 1-正常, 2-已删除
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_comments_post_id ON comments(post_id, created_at DESC);
+CREATE INDEX idx_comments_user_id ON comments(user_id, created_at DESC);
+CREATE INDEX idx_comments_parent_id ON comments(parent_id);
+
+-- ==========================================
+-- post_likes表（帖子点赞记录表）
+-- ==========================================
+CREATE TABLE post_likes (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(post_id, user_id)
+);
+
+CREATE INDEX idx_post_likes_post_id ON post_likes(post_id);
+CREATE INDEX idx_post_likes_user_id ON post_likes(user_id);
+
+-- ==========================================
+-- comment_likes表（评论点赞记录表）
+-- ==========================================
+CREATE TABLE comment_likes (
+    id BIGSERIAL PRIMARY KEY,
+    comment_id BIGINT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(comment_id, user_id)
+);
+
+CREATE INDEX idx_comment_likes_comment_id ON comment_likes(comment_id);
+CREATE INDEX idx_comment_likes_user_id ON comment_likes(user_id);
+
+-- ==========================================
 -- operation_logs表（等保要求：操作日志留存180天）
 -- ==========================================
 CREATE TABLE operation_logs (
@@ -151,6 +199,12 @@ INSERT INTO posts (user_id, post_type, title, content, location, like_count, com
 INSERT INTO orders (post_id, user_id, help_type, reward_amount, location, status, created_at, updated_at) VALUES
 (2, 3, 2, 10.00, ST_SetSRID(ST_MakePoint(116.4074, 39.9042), 4326)::geography, 1, NOW(), NOW()),
 (4, 4, 1, 0.00, ST_SetSRID(ST_MakePoint(116.4060, 39.9040), 4326)::geography, 1, NOW(), NOW());
+
+-- 测试评论
+INSERT INTO comments (post_id, user_id, content, like_count, status, created_at, updated_at) VALUES
+(1, 4, '欢迎欢迎！期待更多邻居加入~', 5, 1, NOW(), NOW()),
+(1, 3, '这个平台真不错，方便邻里交流', 3, 1, NOW(), NOW()),
+(2, 4, '我可以帮忙，怎么联系你？', 2, 1, NOW(), NOW());
 
 -- ==========================================
 -- 视图定义
@@ -256,5 +310,10 @@ CREATE TRIGGER update_posts_updated_at
 
 CREATE TRIGGER update_orders_updated_at
     BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_comments_updated_at
+    BEFORE UPDATE ON comments
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();

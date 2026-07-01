@@ -1,9 +1,11 @@
 package com.linliquan.service;
 
 import com.linliquan.model.entity.Post;
+import com.linliquan.model.entity.PostLike;
 import com.linliquan.model.entity.User;
 import com.linliquan.model.enums.VerificationStatus;
 import com.linliquan.repository.PostRepository;
+import com.linliquan.repository.PostLikeRepository;
 import com.linliquan.common.Result;
 import com.linliquan.common.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class PostService {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private PostLikeRepository postLikeRepository;
 
     @Autowired
     private CacheService cacheService;
@@ -201,23 +206,52 @@ public class PostService {
     }
 
     /**
-     * 点赞
+     * 点赞/取消点赞
+     * @param liked true-点赞, false-取消点赞
      */
     @Transactional
-    public Result<Void> likePost(Long postId, User user) {
+    public Result<Map<String, Object>> toggleLike(Long postId, User user, boolean liked) {
         // 【红线强制】状态校验
         if (!user.isVerified()) {
             return Result.fail(ResultCode.FORBIDDEN_UNVERIFIED);
         }
 
         Post post = postRepository.findById(postId).orElse(null);
-        if (post == null) {
+        if (post == null || post.getStatus() != 1) {
             return Result.fail(ResultCode.NOT_FOUND);
         }
 
-        post.setLikeCount(post.getLikeCount() + 1);
-        postRepository.save(post);
+        boolean exists = postLikeRepository.existsByPostIdAndUserId(postId, user.getId());
 
-        return Result.success(null);
+        if (liked && !exists) {
+            // 点赞
+            PostLike postLike = new PostLike();
+            postLike.setPostId(postId);
+            postLike.setUserId(user.getId());
+            postLike.setCreatedAt(LocalDateTime.now());
+            postLikeRepository.save(postLike);
+
+            post.setLikeCount(post.getLikeCount() + 1);
+            postRepository.save(post);
+        } else if (!liked && exists) {
+            // 取消点赞
+            postLikeRepository.deleteByPostIdAndUserId(postId, user.getId());
+
+            post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
+            postRepository.save(post);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("liked", liked);
+        result.put("likeCount", post.getLikeCount());
+
+        return Result.success(result);
+    }
+
+    /**
+     * 检查用户是否已点赞
+     */
+    public boolean checkLiked(Long postId, Long userId) {
+        return postLikeRepository.existsByPostIdAndUserId(postId, userId);
     }
 }

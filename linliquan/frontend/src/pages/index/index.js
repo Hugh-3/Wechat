@@ -2,7 +2,8 @@
 // 信息广场页面
 
 const { getCurrentUserStatus, getStatusConfig, canWrite } = require('../../utils/auth');
-const { getPostList, createPost } = require('../../mock/data');
+const { getPostList, createPost, toggleLike } = require('../../mock/data');
+const { formatRelativeTime } = require('../../utils/time');
 
 Page({
   data: {
@@ -62,8 +63,14 @@ Page({
                    this.data.activeTab === 'info' ? 1 : 2;
       const result = await getPostList(type, this.data.page, this.data.pageSize);
 
+      const processedList = result.list.map(item => ({
+        ...item,
+        timeText: formatRelativeTime(item.createdAt),
+        liked: item.liked || false
+      }));
+
       this.setData({
-        posts: [...this.data.posts, ...result.list],
+        posts: [...this.data.posts, ...processedList],
         page: this.data.page + 1,
         hasMore: result.list.length >= this.data.pageSize
       });
@@ -72,6 +79,16 @@ Page({
       wx.showToast({ title: '加载失败', icon: 'none' });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  // 点击认证引导条
+  onAuthBannerTap() {
+    const { userStatus } = this.data;
+    if (userStatus === 1) {
+      wx.showToast({ title: '认证正在审核中，请耐心等待', icon: 'none' });
+    } else {
+      wx.navigateTo({ url: '/pages/auth/index' });
     }
   },
 
@@ -128,9 +145,32 @@ Page({
       this.showAuthGuideModal();
       return;
     }
-    // 点赞逻辑
     const postId = e.currentTarget.dataset.id;
-    console.log('点赞', postId);
+    const posts = [...this.data.posts];
+    const index = posts.findIndex(p => p.id === postId);
+    if (index === -1) return;
+
+    const post = posts[index];
+    const newLiked = !post.liked;
+    const newLikeCount = newLiked ? post.likeCount + 1 : post.likeCount - 1;
+
+    posts[index] = {
+      ...post,
+      liked: newLiked,
+      likeCount: newLikeCount
+    };
+
+    this.setData({ posts });
+
+    toggleLike(postId, newLiked).catch(() => {
+      posts[index] = {
+        ...post,
+        liked: post.liked,
+        likeCount: post.likeCount
+      };
+      this.setData({ posts });
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    });
   },
 
   // 评论

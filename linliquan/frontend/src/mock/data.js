@@ -3,8 +3,46 @@
  * 用于前端并行开发，不依赖后端接口
  */
 
+// 模拟点赞状态
+const likeStatus = {};
+
+// 模拟评论数据
+const mockComments = {
+  1: [
+    {
+      id: 101,
+      userId: 200,
+      userName: '赵叔叔',
+      userAvatar: '/assets/avatar4.png',
+      content: '真的吗？下班我去看看，正好想买水果',
+      createdAt: '2026-07-01 11:00',
+      likeCount: 3
+    },
+    {
+      id: 102,
+      userId: 201,
+      userName: '刘阿姨',
+      userAvatar: '/assets/avatar5.png',
+      content: '我昨天也买了，确实新鲜，老板人也很好',
+      createdAt: '2026-07-01 10:45',
+      likeCount: 5
+    }
+  ],
+  2: [
+    {
+      id: 103,
+      userId: 202,
+      userName: '陈先生',
+      userAvatar: '/assets/avatar6.png',
+      content: '我要一个！怎么联系你？',
+      createdAt: '2026-07-01 09:30',
+      likeCount: 1
+    }
+  ]
+};
+
 // 模拟帖子数据
-export const mockPosts = [
+const mockPosts = [
   {
     id: 1,
     userId: 100,
@@ -93,7 +131,93 @@ export const createPost = (data) => {
         reject({ code: 40301, message: '仅认证业主可发布内容' });
         return;
       }
-      resolve({ id: Date.now(), ...data });
+      const newPost = {
+        id: Date.now(),
+        ...data,
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+        createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+      };
+      mockPosts.unshift(newPost);
+      resolve(newPost);
+    }, 500);
+  });
+};
+
+// 点赞/取消点赞
+export const toggleLike = (postId, liked) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      likeStatus[postId] = liked;
+      const post = mockPosts.find(p => p.id === postId);
+      if (post) {
+        post.likeCount = liked ? post.likeCount + 1 : Math.max(0, post.likeCount - 1);
+      }
+      resolve({ success: true });
+    }, 200);
+  });
+};
+
+// 获取帖子详情
+export const getPostDetail = (postId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const post = mockPosts.find(p => p.id == postId);
+      if (post) {
+        resolve({
+          ...post,
+          liked: !!likeStatus[postId]
+        });
+      } else {
+        reject({ message: '帖子不存在' });
+      }
+    }, 300);
+  });
+};
+
+// 获取评论列表
+export const getComments = (postId, page = 1, pageSize = 20) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const comments = mockComments[postId] || [];
+      resolve({
+        list: comments,
+        total: comments.length,
+        page,
+        pageSize
+      });
+    }, 300);
+  });
+};
+
+// 发表评论
+export const createComment = (postId, content) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const status = wx.getStorageSync('mockUserStatus') || 0;
+      if (status !== 2) {
+        reject({ code: 40301, message: '仅认证业主可发表评论' });
+        return;
+      }
+      const newComment = {
+        id: Date.now(),
+        userId: 999,
+        userName: '我',
+        userAvatar: '/assets/my-avatar.png',
+        content,
+        createdAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        likeCount: 0
+      };
+      if (!mockComments[postId]) {
+        mockComments[postId] = [];
+      }
+      mockComments[postId].unshift(newComment);
+      const post = mockPosts.find(p => p.id == postId);
+      if (post) {
+        post.commentCount = (post.commentCount || 0) + 1;
+      }
+      resolve(newComment);
     }, 500);
   });
 };

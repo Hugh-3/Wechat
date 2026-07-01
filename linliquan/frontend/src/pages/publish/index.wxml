@@ -26,6 +26,7 @@
         bindinput="onTitleInput"
         maxlength="100"
       />
+      <text class="word-count">{{title.length}}/100</text>
     </view>
 
     <view class="form-item">
