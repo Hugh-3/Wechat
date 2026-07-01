@@ -1,0 +1,55 @@
+package com.linliquan.controller;
+
+import com.linliquan.common.Result;
+import com.linliquan.model.entity.Order;
+import com.linliquan.model.entity.User;
+import com.linliquan.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
+/**
+ * 互助任务控制器
+ * 【红线强制】发布/接单接口已接入权限拦截器
+ */
+@RestController
+@RequestMapping("/v1/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    /**
+     * 【写操作】发布互助任务
+     * 【红线强制】已接入权限拦截器
+     */
+    @PostMapping
+    public Result<Order> createOrder(HttpServletRequest request, @RequestBody Map<String, Object> params) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        return orderService.createOrder(currentUser, params);
+    }
+
+    /**
+     * 【读操作】获取附近互助任务
+     * 三种状态均可访问
+     */
+    @GetMapping("/nearby")
+    public Result<?> getNearbyOrders(
+            @RequestParam Double lat,
+            @RequestParam Double lng,
+            @RequestParam(defaultValue = "5") Double radius) {
+        return orderService.getNearbyOrders(lat, lng, radius);
+    }
+
+    /**
+     * 【写操作】接单
+     * 【红线强制】已接入权限拦截器
+     */
+    @PostMapping("/{id}/accept")
+    public Result<Void> acceptOrder(HttpServletRequest request, @PathVariable Long id) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        return orderService.acceptOrder(id, currentUser);
+    }
+}

@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: linliquan
+  profiles:
+    active: dev
+
+  # PostgreSQL + PostGIS配置
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/linliquan?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Redis配置（Cache Aside缓存策略）
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 3000
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+        max-wait: 3000
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Shanghai
+
+# Server配置
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+
+# 日志配置（等保要求：操作日志留存180天）
+logging:
+  level:
+    root: INFO
+    com.linliquan: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/linliquan/application.log
+    max-size: 100MB
+    max-history: 180
+
+# 安全配置
+security:
+  # 等保要求：Token有效期24小时
+  token:
+    access-token-validity-seconds: 86400
+    refresh-token-validity-seconds: 604800
+  # 等保要求：连续失败5次锁定30分钟
+  auth:
+    max-fail-count: 5
+    lock-duration-minutes: 30
+    fail-count-window-seconds: 1800
+
+# 加密配置（KMS密钥ID，从环境变量读取）
+encryption:
+  kms-key-id: ${KMS_KEY_ID:}
+  phone-aes-key: ${PHONE_AES_KEY:}
+
+# 文件上传配置（腾讯云COS）
+cos:
+  secret-id: ${COS_SECRET_ID:}
+  secret-key: ${COS_SECRET_KEY:}
+  bucket: ${COS_BUCKET:linliquan-files}
+  region: ${COS_REGION:ap-guangzhou}
+  allowed-domains:
+    - xxx-123456.cos.ap-guangzhou.myqcloud.com
+
+# 腾讯云IM配置
+im:
+  app-id: ${IM_APP_ID:}
+  secret-key: ${IM_SECRET_KEY:}
+
+# 腾讯云内容安全配置（敏感词过滤）
+content-audit:
+  secret-id: ${AUDIT_SECRET_ID:}
+  secret-key: ${AUDIT_SECRET_KEY:}

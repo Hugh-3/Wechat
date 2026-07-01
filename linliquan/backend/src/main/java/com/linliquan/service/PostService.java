@@ -1,0 +1,223 @@
+package com.linliquan.service;
+
+import com.linliquan.model.entity.Post;
+import com.linliquan.model.entity.User;
+import com.linliquan.model.enums.VerificationStatus;
+import com.linliquan.repository.PostRepository;
+import com.linliquan.common.Result;
+import com.linliquan.common.ResultCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 帖子服务
+ * 【红线强制】所有写操作接口必须校验用户认证状态
+ */
+@Service
+public class PostService {
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private CacheService cacheService;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    /**
+     * 【核心方法】发布动态
+     *
+     * 【红线强制】状态校验：if (user.verificationStatus != VERIFIED) { return 403; }
+     */
+    @Transactional
+    public Result<Post> createPost(User user, Map<String, Object> params) {
+        // 【红线强制】状态校验：最前方，严禁降级放行
+        if (!user.isVerified()) {
+            if (user.isPending()) {
+                return Result.fail(ResultCode.FORBIDDEN_PENDING_VERIFICATION);
+            }
+            return Result.fail(ResultCode.FORBIDDEN_UNVERIFIED);
+        }
+
+        // 参数校验
+        String title = (String) params.get("title");
+        String content = (String) params.get("content");
+        Integer postType = (Integer) params.get("type");
+        Double lat = params.get("latitude") != null ? ((Number) params.get("latitude")).doubleValue() : null;
+        Double lng = params.get("longitude") != null ? ((Number) params.get("longitude")).doubleValue() : null;
+
+        // 基础校验
+        if (title == null || title.trim().isEmpty() || title.length() > 100) {
+            return Result.fail(ResultCode.BAD_REQUEST);
+        }
+        if (content == null || content.trim().isEmpty() || content.length() > 2000) {
+            return Result.fail(ResultCode.BAD_REQUEST);
+        }
+        if (postType == null || (postType != 1 && postType != 2)) {
+            return Result.fail(ResultCode.BAD_REQUEST);
+        }
+
+        // 互助类型必须有位置
+        if (postType == 2 && (lat == null || lng == null)) {
+            return Result.fail(ResultCode.BAD_REQUEST);
+        }
+
+        // 【核心】经纬度校验（防脏数据）
+        if (lat != null && lng != null) {
+            if (!(-90 <= lat && lat <= 90)) {
+                return Result.fail(ResultCode.BAD_REQUEST);
+            }
+            if (!(-180 <= lng && lng <= 180)) {
+                return Result.fail(ResultCode.BAD_REQUEST);
+            }
+            // 排除(0,0)无效坐标
+            if (lat == 0 && lng == 0) {
+                return Result.fail(ResultCode.BAD_REQUEST);
+            }
+        }
+
+        // 创建PostGIS坐标点（SRID=4326为WGS84坐标系）
+        Point location = null;
+        if (lat != null && lng != null) {
+            Coordinate coordinate = new Coordinate(lng, lat); // 注意：经度在前，纬度在后
+            location = new Point(coordinate);
+            location.setSRID(4326);
+        }
+
+        // 构建实体
+        Post post = new Post();
+        post.setUserId(user.getId());
+        post.setPostType(postType);
+        post.setTitle(title.trim());
+        post.setContent(content.trim());
+        post.setImages((java.util.List<String>) params.get("images"));
+        post.setLatitude(lat);
+        post.setLongitude(lng);
+        post.setLikeCount(0);
+        post.setCommentCount(0);
+        post.setViewCount(0);
+        post.setStatus(1);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        // 写入数据库
+        Post savedPost = postRepository.save(post);
+
+        // 【关键】Cache Aside策略：先写DB，再删缓存
+        cacheService.invalidatePostListCache(String.valueOf(postType), null);
+
+        return Result.success(savedPost);
+    }
+
+    /**
+     * 获取帖子列表（分页）
+     * 读操作，支持缓存
+     */
+    public Result<Map<String, Object>> getPostList(Integer postType, Integer page, Integer pageSize) {
+        // 构建缓存Key
+        String cacheKey = String.format("posts:list:%s:page:%d", postType != null ? postType : "all", page);
+
+        // 尝试从缓存读取
+        String cached = cacheService.get(cacheKey);
+        if (cached != null) {
+            // 反序列化并返回（简化处理）
+            Map<String, Object> result = new HashMap<>();
+            result.put("fromCache", true);
+            // 实际项目中需要JSON反序列化
+            return Result.success(result);
+        }
+
+        // 从数据库查询
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Post> postPage;
+        if (postType != null) {
+            postPage = postRepository.findByPostTypeAndStatusOrderByCreatedAtDesc(postType, 1, pageable);
+        } else {
+            postPage = postRepository.findByStatusOrderByCreatedAtDesc(1, pageable);
+        }
+
+        // 构建返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", postPage.getContent());
+        result.put("total", postPage.getTotalElements());
+        result.put("page", page);
+        result.put("pageSize", pageSize);
+        result.put("totalPages", postPage.getTotalPages());
+
+        // 写入缓存（300秒过期）
+        // cacheService.set(cacheKey, JSON.toJSONString(result));
+
+        return Result.success(result);
+    }
+
+    /**
+     * 获取附近互助任务（PostGIS空间查询）
+     */
+    @SuppressWarnings("unchecked")
+    public Result<Map<String, Object>> getNearbyOrders(Double userLat, Double userLng, Double radiusKm, Integer page, Integer pageSize) {
+        // PostGIS距离查询SQL
+        String sql = """
+            SELECT p.*,
+                   ST_Distance(p.location::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as distance_meters
+            FROM posts p
+            WHERE p.post_type = 2
+              AND p.status = 1
+              AND ST_DWithin(p.location::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, :radius)
+            ORDER BY distance_meters ASC
+            LIMIT :limit OFFSET :offset
+            """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("lat", userLat);
+        query.setParameter("lng", userLng);
+        query.setParameter("radius", radiusKm * 1000); // 转换为米
+        query.setParameter("limit", pageSize);
+        query.setParameter("offset", (page - 1) * pageSize);
+
+        @SuppressWarnings("rawtypes")
+        java.util.List resultList = query.getResultList();
+
+        // 转换为Post对象（简化处理）
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", resultList);
+        result.put("page", page);
+        result.put("pageSize", pageSize);
+
+        return Result.success(result);
+    }
+
+    /**
+     * 点赞
+     */
+    @Transactional
+    public Result<Void> likePost(Long postId, User user) {
+        // 【红线强制】状态校验
+        if (!user.isVerified()) {
+            return Result.fail(ResultCode.FORBIDDEN_UNVERIFIED);
+        }
+
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            return Result.fail(ResultCode.NOT_FOUND);
+        }
+
+        post.setLikeCount(post.getLikeCount() + 1);
+        postRepository.save(post);
+
+        return Result.success(null);
+    }
+}

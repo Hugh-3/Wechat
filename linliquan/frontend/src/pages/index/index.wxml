@@ -1,0 +1,83 @@
+<!-- pages/index/index.wxml -->
+<!-- 信息广场页面 -->
+
+<view class="container">
+  <!-- 顶部状态栏（开发调试用） -->
+  <view class="status-bar">
+    <text class="status-text">当前状态：{{userStatusDesc}}</text>
+    <button size="mini" bindtap="switchStatus">切换状态</button>
+  </view>
+
+  <!-- 分类Tab -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="onTabChange" data-type="all">
+      全部
+    </view>
+    <view class="tab-item {{activeTab === 'info' ? 'active' : ''}}" bindtap="onTabChange" data-type="info">
+      信息广场
+    </view>
+    <view class="tab-item {{activeTab === 'help' ? 'active' : ''}}" bindtap="onTabChange" data-type="help">
+      邻里互助
+    </view>
+  </view>
+
+  <!-- 帖子列表 -->
+  <scroll-view scroll-y class="post-list" bindscrolltolower="loadMore">
+    <block wx:for="{{posts}}" wx:key="id">
+      <view class="post-card" bindtap="onPostTap" data-id="{{item.id}}">
+        <!-- 用户信息 -->
+        <view class="post-header">
+          <image class="user-avatar" src="{{item.userAvatar}}" />
+          <view class="user-info">
+            <text class="user-name">{{item.userName}}</text>
+            <text class="post-time">{{item.createdAt}}</text>
+          </view>
+          <text class="distance-tag" wx:if="{{item.distance}}">{{item.distance}}</text>
+        </view>
+
+        <!-- 帖子内容 -->
+        <view class="post-content">
+          <text class="post-title">{{item.title}}</text>
+          <text class="post-text">{{item.content}}</text>
+          <view class="post-images" wx:if="{{item.images && item.images.length > 0}}">
+            <image wx:for="{{item.images}}" wx:for-item="img" src="{{img}}" mode="aspectFill" />
+          </view>
+        </view>
+
+        <!-- 互动栏 -->
+        <view class="post-actions">
+          <view class="action-item" bindtap="onLikeTap" data-id="{{item.id}}">
+            <text class="icon">👍</text>
+            <text>{{item.likeCount}}</text>
+          </view>
+          <view class="action-item" bindtap="onCommentTap" data-id="{{item.id}}">
+            <text class="icon">💬</text>
+            <text>{{item.commentCount}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 加载状态 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore && posts.length > 0}}">
+      <text>没有更多了</text>
+    </view>
+    <view class="empty" wx:if="{{posts.length === 0 && !loading}}">
+      <text>暂无内容</text>
+    </view>
+  </scroll-view>
+
+  <!-- 悬浮发布按钮 -->
+  <!-- 【红线强制】PENDING状态：灰色+审核中角标 -->
+  <!-- 【红线强制】UNAUTH状态：点击弹出全屏认证引导 -->
+  <view class="publish-btn-wrapper" bindtap="onPublishTap">
+    <view class="publish-btn {{publishEnabled ? 'enabled' : 'disabled'}}">
+      <text class="icon">+</text>
+      <!-- PENDING状态显示审核中角标 -->
+      <view class="badge" wx:if="{{publishBadge}}">{{publishBadge}}</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,84 @@
+<!-- pages/helper/index.wxml -->
+<!-- 邻里互助页面 -->
+
+<view class="container">
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <text class="status-text">当前状态：{{userStatusDesc}}</text>
+    <button size="mini" bindtap="switchStatus">切换状态</button>
+  </view>
+
+  <!-- 位置信息 -->
+  <view class="location-bar" wx:if="{{location}}">
+    <text class="location-text">附近 {{radius}} 公里内</text>
+    <text class="refresh-btn" bindtap="getLocation">重新定位</text>
+  </view>
+
+  <!-- 类型筛选 -->
+  <scroll-view scroll-x class="type-bar">
+    <view
+      wx:for="{{helpTypes}}"
+      wx:key="id"
+      class="type-item {{activeType === item.id ? 'active' : ''}}"
+      bindtap="onTypeChange"
+      data-id="{{item.id}}"
+    >
+      {{item.name}}
+    </view>
+  </scroll-view>
+
+  <!-- 互助任务列表 -->
+  <scroll-view scroll-y class="order-list">
+    <block wx:for="{{orders}}" wx:key="id">
+      <view class="order-card" bindtap="onOrderTap" data-id="{{item.id}}">
+        <!-- 类型标签 -->
+        <view class="order-type type-{{item.helpType}}">
+          {{helpTypes[item.helpType].name}}
+        </view>
+
+        <!-- 内容 -->
+        <view class="order-content">
+          <text class="order-title">{{item.title}}</text>
+          <text class="order-desc">{{item.content}}</text>
+        </view>
+
+        <!-- 发布者信息 -->
+        <view class="order-user">
+          <image class="user-avatar" src="{{item.userAvatar}}" />
+          <text class="user-name">{{item.userName}}</text>
+        </view>
+
+        <!-- 底部信息 -->
+        <view class="order-footer">
+          <!-- 【核心】距离排序展示 -->
+          <text class="distance">{{item.distanceText}}</text>
+
+          <!-- 酬劳 -->
+          <text class="reward" wx:if="{{item.rewardAmount > 0}}">
+            酬劳 ¥{{item.rewardAmount}}
+          </text>
+
+          <!-- 联系按钮 -->
+          <view
+            class="contact-btn {{publishEnabled ? 'enabled' : 'disabled'}}"
+            bindtap="onContactTap"
+            data-id="{{item.id}}"
+          >
+            {{publishEnabled ? '我要联系' : '查看详情'}}
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{orders.length === 0 && !loading}}">
+      <text>附近暂无互助任务</text>
+      <text class="empty-hint">成为认证业主后可以发布</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+  </scroll-view>
+</view>
