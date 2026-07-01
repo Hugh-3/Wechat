@@ -2,6 +2,8 @@ package com.linliquan.model.entity;
 
 import com.linliquan.model.enums.VerificationStatus;
 import lombok.Data;
+
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -9,8 +11,15 @@ import java.time.LocalDateTime;
  * 【红线强制】verification_status字段必须存在，用于权限拦截
  */
 @Data
+@Entity
+@Table(name = "users", indexes = {
+    @Index(name = "idx_phone_hash", columnList = "phone_hash"),
+    @Index(name = "idx_verification_status", columnList = "verification_status")
+})
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -37,6 +46,8 @@ public class User {
      * 【红线强制】认证状态：0-UNAUTH, 1-PENDING, 2-VERIFIED
      * 必须使用TINYINT类型存储，建立独立索引供权限拦截中间件高频查询
      */
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "verification_status", nullable = false)
     private VerificationStatus verificationStatus;
 
     /**
