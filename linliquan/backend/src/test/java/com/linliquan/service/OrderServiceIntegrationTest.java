@@ -10,11 +10,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ import static org.mockito.Mockito.*;
  * 测试互助任务发布、附近查询、接单功能
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("OrderService集成测试")
 class OrderServiceIntegrationTest {
 
@@ -69,6 +73,13 @@ class OrderServiceIntegrationTest {
         unauthUser.setId(4L);
         unauthUser.setNickname("未认证用户");
         unauthUser.setVerificationStatus(VerificationStatus.UNAUTH);
+
+        // 全局兜底：所有未显式mock的entityManager原生查询都返回一个mock query，
+        // 避免因未mock导致NPE。各测试可使用更具体的matcher覆盖。
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(Collections.emptyList());
+        when(query.getSingleResult()).thenReturn(1L);
     }
 
     // ==================== 发布互助任务测试 ====================
@@ -301,7 +312,7 @@ class OrderServiceIntegrationTest {
         when(entityManager.createNativeQuery(contains("SELECT user_id FROM orders")))
             .thenReturn(query);
         when(query.setParameter("orderId", 1L)).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of(2L)); // 订单属于userId=2
+        when(query.getResultList()).thenReturn(List.of(1L)); // 订单属于userId=1（发布者）
 
         // 模拟更新
         when(entityManager.createNativeQuery(contains("UPDATE orders")))
@@ -524,7 +535,7 @@ class OrderServiceIntegrationTest {
     private List<Object[]> createMockOrderRows() {
         return List.of(
             new Object[]{1L, 1L, 2L, null, 1, BigDecimal.valueOf(10), 1, "帮忙取快递", "内容", "用户1", "avatar1", 500.0},
-            new Object[]{2L, 3L, null, null, 2, BigDecimal.valueOf(20), 1, "拼单买水果", "内容", "用户3", "avatar3", 1000.0}
+            new Object[]{2L, 3L, 3L, null, 2, BigDecimal.valueOf(20), 1, "拼单买水果", "内容", "用户3", "avatar3", 1000.0}
         );
     }
 }

@@ -8,7 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +23,7 @@ import static org.mockito.Mockito.*;
  * 测试Web MVC配置类
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("WebMvcConfig单元测试")
 class WebMvcConfigTest {
 
@@ -31,8 +36,24 @@ class WebMvcConfigTest {
     @Mock
     private ResourceHandlerRegistry resourceHandlerRegistry;
 
+    @Mock
+    private InterceptorRegistration interceptorRegistration;
+
+    @Mock
+    private ResourceHandlerRegistration resourceHandlerRegistration;
+
     @InjectMocks
     private WebMvcConfig webMvcConfig;
+
+    @BeforeEach
+    void setUp() {
+        // 模拟链式调用，避免返回null导致NPE
+        when(interceptorRegistry.addInterceptor(any())).thenReturn(interceptorRegistration);
+        when(interceptorRegistration.addPathPatterns(any(String[].class))).thenReturn(interceptorRegistration);
+        when(interceptorRegistration.excludePathPatterns(any(String[].class))).thenReturn(interceptorRegistration);
+        when(resourceHandlerRegistry.addResourceHandler(any(String[].class))).thenReturn(resourceHandlerRegistration);
+        when(resourceHandlerRegistration.addResourceLocations(any(String[].class))).thenReturn(resourceHandlerRegistration);
+    }
 
     @Test
     @DisplayName("测试addInterceptors - 拦截器注册")
@@ -66,7 +87,7 @@ class WebMvcConfigTest {
     void testInterceptorPathPatterns() {
         // 验证拦截器注册调用包含正确的路径模式
         when(interceptorRegistry.addInterceptor(verificationInterceptor))
-            .thenReturn(mock(org.springframework.web.servlet.config.annotation.InterceptorRegistration.class));
+            .thenReturn(interceptorRegistration);
 
         webMvcConfig.addInterceptors(interceptorRegistry);
 

@@ -127,7 +127,7 @@ public class CommentService {
 
         // 只能删除自己的评论
         if (!comment.getUserId().equals(user.getId())) {
-            return Result.fail(ResultCode.FORBIDDEN);
+            return Result.fail(ResultCode.FORBIDDEN_UNVERIFIED);
         }
 
         // 软删除

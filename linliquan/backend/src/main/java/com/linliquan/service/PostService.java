@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -98,8 +99,9 @@ public class PostService {
         // 创建PostGIS坐标点（SRID=4326为WGS84坐标系）
         Point location = null;
         if (lat != null && lng != null) {
-            Coordinate coordinate = new Coordinate(lng, lat); // 注意：经度在前，纬度在后
-            location = new Point(coordinate);
+            Coordinate coordinate = new Coordinate(lng, lat);
+            GeometryFactory factory = new GeometryFactory();
+            location = factory.createPoint(coordinate);
             location.setSRID(4326);
         }
 

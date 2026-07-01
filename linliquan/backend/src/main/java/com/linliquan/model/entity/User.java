@@ -1,7 +1,6 @@
 package com.linliquan.model.entity;
 
 import com.linliquan.model.enums.VerificationStatus;
-import lombok.Data;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -10,7 +9,6 @@ import java.time.LocalDateTime;
  * 用户实体
  * 【红线强制】verification_status字段必须存在，用于权限拦截
  */
-@Data
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_phone_hash", columnList = "phone_hash"),
@@ -78,6 +76,110 @@ public class User {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPhoneHash() {
+        return phoneHash;
+    }
+
+    public void setPhoneHash(String phoneHash) {
+        this.phoneHash = phoneHash;
+    }
+
+    public String getPhoneEncrypted() {
+        return phoneEncrypted;
+    }
+
+    public void setPhoneEncrypted(String phoneEncrypted) {
+        this.phoneEncrypted = phoneEncrypted;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(VerificationStatus verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+    public LocalDateTime getVerificationApplyTime() {
+        return verificationApplyTime;
+    }
+
+    public void setVerificationApplyTime(LocalDateTime verificationApplyTime) {
+        this.verificationApplyTime = verificationApplyTime;
+    }
+
+    public LocalDateTime getVerificationPassTime() {
+        return verificationPassTime;
+    }
+
+    public void setVerificationPassTime(LocalDateTime verificationPassTime) {
+        this.verificationPassTime = verificationPassTime;
+    }
+
+    public String getIdCardEncrypted() {
+        return idCardEncrypted;
+    }
+
+    public void setIdCardEncrypted(String idCardEncrypted) {
+        this.idCardEncrypted = idCardEncrypted;
+    }
+
+    public String getHouseNumberEncrypted() {
+        return houseNumberEncrypted;
+    }
+
+    public void setHouseNumberEncrypted(String houseNumberEncrypted) {
+        this.houseNumberEncrypted = houseNumberEncrypted;
+    }
+
+    public String getCertificateUrl() {
+        return certificateUrl;
+    }
+
+    public void setCertificateUrl(String certificateUrl) {
+        this.certificateUrl = certificateUrl;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     /**
      * 判断用户是否可以进行写操作

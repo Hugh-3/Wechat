@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.*;
  * 测试AuthService与UserRepository的集成
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("AuthService集成测试")
 class AuthServiceIntegrationTest {
 
@@ -76,7 +79,7 @@ class AuthServiceIntegrationTest {
         // 3. 验证结果
         assertTrue(result.isSuccess());
         assertNotNull(result.getData());
-        assertEquals(1L, result.getData().get("user"));
+        assertEquals(1L, ((java.util.Map<?, ?>) result.getData().get("user")).get("id"));
         assertNotNull(result.getData().get("accessToken"));
     }
 
@@ -281,7 +284,7 @@ class AuthServiceIntegrationTest {
         var loginResult = authService.login(testPhone);
         assertTrue(loginResult.isSuccess());
         assertEquals(VerificationStatus.UNAUTH.getCode(),
-            ((User) loginResult.getData().get("user")).getVerificationStatus());
+            ((java.util.Map<?, ?>) loginResult.getData().get("user")).get("verificationStatus"));
 
         // 2. 获取用户状态（未认证）
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));

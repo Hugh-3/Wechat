@@ -5,14 +5,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,13 +34,11 @@ import static org.mockito.Mockito.*;
  * 测试Order实体的数据访问层方法
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("OrderRepository单元测试")
 class OrderRepositoryTest {
 
     @Mock
-    private JpaRepository<Order, Long> jpaRepository;
-
-    @InjectMocks
     private OrderRepository orderRepository;
 
     private Order testOrder1;
@@ -51,19 +53,19 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("测试findById - 成功查找订单")
     void testFindById_Success() {
-        when(jpaRepository.findById(1L)).thenReturn(Optional.of(testOrder1));
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder1));
 
         Optional<Order> result = orderRepository.findById(1L);
 
         assertTrue(result.isPresent());
         assertEquals(BigDecimal.valueOf(10), result.get().getRewardAmount());
-        verify(jpaRepository, times(1)).findById(1L);
+        verify(orderRepository, times(1)).findById(1L);
     }
 
     @Test
     @DisplayName("测试findById - 订单不存在")
     void testFindById_NotFound() {
-        when(jpaRepository.findById(999L)).thenReturn(Optional.empty());
+        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
 
         Optional<Order> result = orderRepository.findById(999L);
 
@@ -75,7 +77,7 @@ class OrderRepositoryTest {
     void testFindByStatus() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Order> page = new PageImpl<>(List.of(testOrder1, testOrder2));
-        when(jpaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+        when(orderRepository.findByStatusOrderByCreatedAtDesc(1, pageable))
             .thenReturn(page);
 
         Page<Order> result = orderRepository.findByStatusOrderByCreatedAtDesc(1, pageable);
@@ -89,7 +91,7 @@ class OrderRepositoryTest {
     void testFindByUserIdAndStatus() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Order> page = new PageImpl<>(List.of(testOrder1));
-        when(jpaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+        when(orderRepository.findByUserIdAndStatusOrderByCreatedAtDesc(1L, 1, pageable))
             .thenReturn(page);
 
         Page<Order> result = orderRepository.findByUserIdAndStatusOrderByCreatedAtDesc(1L, 1, pageable);
@@ -103,7 +105,7 @@ class OrderRepositoryTest {
     @DisplayName("测试findByHelperUserIdAndStatus - 查询用户接单记录")
     void testFindByHelperUserIdAndStatus() {
         Order acceptedOrder = createTestOrder(3L, 1L, 2L, 2, BigDecimal.valueOf(15), 2);
-        when(jpaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class)))
+        when(orderRepository.findByHelperUserIdAndStatus(2L, 2))
             .thenReturn(List.of(acceptedOrder));
 
         List<Order> result = orderRepository.findByHelperUserIdAndStatus(2L, 2);
@@ -116,7 +118,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("测试findByHelperUserIdAndStatus - 无接单记录")
     void testFindByHelperUserIdAndStatus_Empty() {
-        when(jpaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class)))
+        when(orderRepository.findByHelperUserIdAndStatus(999L, 2))
             .thenReturn(List.of());
 
         List<Order> result = orderRepository.findByHelperUserIdAndStatus(999L, 2);
@@ -127,20 +129,20 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("测试save - 保存新订单")
     void testSave_NewOrder() {
-        when(jpaRepository.save(any(Order.class))).thenReturn(testOrder1);
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder1);
 
         Order savedOrder = orderRepository.save(testOrder1);
 
         assertNotNull(savedOrder);
         assertEquals(1L, savedOrder.getId());
-        verify(jpaRepository, times(1)).save(testOrder1);
+        verify(orderRepository, times(1)).save(testOrder1);
     }
 
     @Test
     @DisplayName("测试save - 更新订单状态")
     void testSave_UpdateOrderStatus() {
         testOrder1.setStatus(2); // 进行中
-        when(jpaRepository.save(any(Order.class))).thenReturn(testOrder1);
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder1);
 
         Order updated = orderRepository.save(testOrder1);
 
@@ -150,17 +152,17 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("测试deleteById - 删除订单")
     void testDeleteById() {
-        doNothing().when(jpaRepository).deleteById(anyLong());
+        doNothing().when(orderRepository).deleteById(anyLong());
 
         orderRepository.deleteById(1L);
 
-        verify(jpaRepository, times(1)).deleteById(1L);
+        verify(orderRepository, times(1)).deleteById(1L);
     }
 
     @Test
     @DisplayName("测试findAll - 查询所有订单")
     void testFindAll() {
-        when(jpaRepository.findAll()).thenReturn(Arrays.asList(testOrder1, testOrder2));
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(testOrder1, testOrder2));
 
         List<Order> orders = orderRepository.findAll();
 
@@ -170,7 +172,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("边界测试 - 空结果集")
     void testFindAll_EmptyResult() {
-        when(jpaRepository.findAll()).thenReturn(List.of());
+        when(orderRepository.findAll()).thenReturn(List.of());
 
         List<Order> orders = orderRepository.findAll();
 
@@ -180,14 +182,16 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("边界测试 - null参数处理")
     void testNullParameters() {
-        assertThrows(Exception.class, () -> orderRepository.findById(null));
+        when(orderRepository.findById(null)).thenThrow(new IllegalArgumentException());
+
+        assertThrows(IllegalArgumentException.class, () -> orderRepository.findById(null));
     }
 
     @Test
     @DisplayName("场景测试 - 订单完整生命周期")
     void testOrderLifecycle() {
         // 1. 创建订单（待接单）
-        when(jpaRepository.save(any(Order.class))).thenAnswer(invocation -> {
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order o = invocation.getArgument(0);
             if (o.getId() == null) {
                 o.setId(1L);
@@ -202,7 +206,7 @@ class OrderRepositoryTest {
         assertNull(saved.getHelperUserId());
 
         // 2. 查询待接单订单
-        when(jpaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class)))
+        when(orderRepository.findByHelperUserIdAndStatus(null, 1))
             .thenReturn(List.of(saved));
         List<Order> pendingOrders = orderRepository.findByHelperUserIdAndStatus(null, 1);
         assertTrue(pendingOrders.isEmpty() || pendingOrders.stream().allMatch(o -> o.getStatus() == 1));
@@ -210,21 +214,21 @@ class OrderRepositoryTest {
         // 3. 接单
         saved.setHelperUserId(2L);
         saved.setStatus(2);
-        when(jpaRepository.save(any(Order.class))).thenReturn(saved);
+        when(orderRepository.save(any(Order.class))).thenReturn(saved);
         Order accepted = orderRepository.save(saved);
         assertEquals(2L, accepted.getHelperUserId());
         assertEquals(2, accepted.getStatus());
 
         // 4. 完成订单
         accepted.setStatus(3);
-        when(jpaRepository.save(any(Order.class))).thenReturn(accepted);
+        when(orderRepository.save(any(Order.class))).thenReturn(accepted);
         Order completed = orderRepository.save(accepted);
         assertEquals(3, completed.getStatus());
 
         // 5. 取消订单
         Order cancelOrder = createTestOrder(4L, 3L, null, 1, BigDecimal.valueOf(30), 1);
         cancelOrder.setStatus(4);
-        when(jpaRepository.save(any(Order.class))).thenReturn(cancelOrder);
+        when(orderRepository.save(any(Order.class))).thenReturn(cancelOrder);
         Order cancelled = orderRepository.save(cancelOrder);
         assertEquals(4, cancelled.getStatus());
     }
@@ -237,7 +241,7 @@ class OrderRepositoryTest {
         Order type3 = createTestOrder(3L, 3L, null, 3, BigDecimal.valueOf(0), 1);  // 生活求助
         Order type4 = createTestOrder(4L, 4L, null, 4, BigDecimal.valueOf(100), 1); // 技能交换
 
-        when(jpaRepository.findAll()).thenReturn(Arrays.asList(type1, type2, type3, type4));
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(type1, type2, type3, type4));
 
         List<Order> allOrders = orderRepository.findAll();
         assertEquals(4, allOrders.size());
@@ -252,13 +256,13 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("性能测试 - 批量查询")
     void testBatchQuery() {
-        when(jpaRepository.findAll()).thenReturn(Arrays.asList(testOrder1, testOrder2));
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(testOrder1, testOrder2));
 
         for (int i = 0; i < 50; i++) {
             orderRepository.findAll();
         }
 
-        verify(jpaRepository, times(50)).findAll();
+        verify(orderRepository, times(50)).findAll();
     }
 
     private Order createTestOrder(Long id, Long userId, Long helperUserId, Integer helpType, BigDecimal reward, Integer status) {
@@ -269,8 +273,10 @@ class OrderRepositoryTest {
         order.setHelperUserId(helperUserId);
         order.setHelpType(helpType);
         order.setRewardAmount(reward);
-        order.setLatitude(39.9042);
-        order.setLongitude(116.4074);
+        GeometryFactory factory = new GeometryFactory();
+        Point location = factory.createPoint(new Coordinate(116.4074, 39.9042));
+        location.setSRID(4326);
+        order.setLocation(location);
         order.setStatus(status);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());

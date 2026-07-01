@@ -27,7 +27,7 @@ public class AuthService {
     public Result<Map<String, Object>> login(String phone) {
         String phoneHash = sha256(phone);
 
-        User user = userRepository.findByPhoneHash(phoneHash);
+        User user = userRepository.findByPhoneHash(phoneHash).orElse(null);
 
         if (user == null) {
             user = register(phone);
