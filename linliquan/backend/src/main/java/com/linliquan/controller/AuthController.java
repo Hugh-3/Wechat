@@ -1,6 +1,7 @@
 package com.linliquan.controller;
 
 import com.linliquan.common.Result;
+import com.linliquan.common.ResultCode;
 import com.linliquan.model.entity.User;
 import com.linliquan.model.enums.VerificationStatus;
 import com.linliquan.service.AuthService;
