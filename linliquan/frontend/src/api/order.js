@@ -8,6 +8,10 @@ function getDetail(id) {
   return get(`/v1/orders/${id}`);
 }
 
+function getMyOrders(role, page, pageSize) {
+  return get('/v1/orders/my', { role, page, pageSize });
+}
+
 function create(data) {
   return post('/v1/orders', data);
 }
@@ -23,6 +27,7 @@ function complete(id) {
 module.exports = {
   getNearby,
   getDetail,
+  getMyOrders,
   create,
   accept,
   complete

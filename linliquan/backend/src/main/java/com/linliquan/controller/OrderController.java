@@ -46,6 +46,35 @@ public class OrderController {
     }
 
     /**
+     * 【读操作】获取当前用户参与的互助任务
+     * @param role published-我发布的, helped-我帮助的, all-全部
+     */
+    @GetMapping("/my")
+    public Result<?> getMyOrders(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "all") String role,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            return Result.fail(com.linliquan.common.ResultCode.UNAUTHORIZED);
+        }
+        return orderService.getMyOrders(currentUser.getId(), role, page, pageSize);
+    }
+
+    /**
+     * 【读操作】获取互助任务详情
+     */
+    @GetMapping("/{id}")
+    public Result<?> getOrderDetail(HttpServletRequest request, @PathVariable Long id) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            return Result.fail(com.linliquan.common.ResultCode.UNAUTHORIZED);
+        }
+        return orderService.getOrderDetail(id, currentUser.getId());
+    }
+
+    /**
      * 【写操作】接单
      * 【红线强制】已接入权限拦截器
      */

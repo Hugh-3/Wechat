@@ -2,6 +2,7 @@ package com.linliquan.controller;
 
 import com.linliquan.annotation.RateLimit;
 import com.linliquan.common.Result;
+import com.linliquan.common.ResultCode;
 import com.linliquan.model.entity.Post;
 import com.linliquan.model.entity.User;
 import com.linliquan.service.PostService;
@@ -58,6 +59,21 @@ public class PostController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         return postService.getNearbyOrders(lat, lng, radius, page, pageSize);
+    }
+
+    /**
+     * 【读操作】获取当前用户发布的帖子列表
+     */
+    @GetMapping("/my")
+    public Result<?> getMyPosts(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            return Result.fail(ResultCode.UNAUTHORIZED);
+        }
+        return postService.getMyPosts(currentUser.getId(), page, pageSize);
     }
 
     /**

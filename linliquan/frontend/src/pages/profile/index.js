@@ -87,7 +87,7 @@ Page({
       wx.showToast({ title: '认证后可查看', icon: 'none' });
       return;
     }
-    wx.showToast({ title: '我的发布功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/my-posts/index' });
   },
 
   goToMyHelps() {
@@ -95,7 +95,7 @@ Page({
       wx.showToast({ title: '认证后可查看', icon: 'none' });
       return;
     }
-    wx.showToast({ title: '我的互助功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/my-orders/index' });
   },
 
   goToMyFavorites() {
@@ -111,11 +111,16 @@ Page({
   },
 
   goToSettings() {
-    wx.showToast({ title: '设置功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/settings/index' });
   },
 
   goToHelp() {
-    wx.showToast({ title: '帮助功能开发中', icon: 'none' });
+    wx.showModal({
+      title: '帮助与反馈',
+      content: '如有问题或建议，请发送邮件至\nfeedback@linliquan.com\n或拨打客服热线\n400-888-0000',
+      showCancel: false,
+      confirmText: '知道了'
+    });
   },
 
   goToAbout() {

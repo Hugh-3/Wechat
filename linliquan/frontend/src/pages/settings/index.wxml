@@ -1,0 +1,73 @@
+<!-- pages/settings/index.wxml -->
+<!-- 设置页面 -->
+
+<view class="container">
+  <!-- 通用设置 -->
+  <view class="menu-section">
+    <view class="menu-title">通用</view>
+    <view class="menu-list">
+      <!-- 消息通知设置 -->
+      <view class="menu-item">
+        <text class="menu-icon">🔔</text>
+        <text class="menu-text">消息通知</text>
+        <switch
+          class="menu-switch"
+          checked="{{notificationEnabled}}"
+          bindchange="onNotificationChange"
+          color="#07c160"
+        />
+      </view>
+      <!-- 缓存清理 -->
+      <view class="menu-item" bindtap="onClearCache">
+        <text class="menu-icon">🧹</text>
+        <text class="menu-text">清理缓存</text>
+        <view class="menu-right">
+          <text class="menu-status">{{cacheSize}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 开发调试 -->
+  <view class="menu-section">
+    <view class="menu-title">开发调试</view>
+    <view class="menu-list">
+      <!-- 环境切换 -->
+      <view class="menu-item" bindtap="onSwitchEnv">
+        <text class="menu-icon">🌐</text>
+        <text class="menu-text">环境切换</text>
+        <view class="menu-right">
+          <text class="menu-status env-tag">{{currentEnv}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于 -->
+  <view class="menu-section">
+    <view class="menu-title">关于</view>
+    <view class="menu-list">
+      <!-- 关于邻里圈 -->
+      <view class="menu-item" bindtap="onAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于邻里圈</text>
+        <view class="menu-right">
+          <text class="menu-status">{{version}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录按钮 -->
+  <view class="logout-section">
+    <view class="logout-btn" bindtap="onLogout">退出登录</view>
+  </view>
+
+  <!-- 底部版本信息 -->
+  <view class="footer-text">
+    <text>邻里圈 {{version}}</text>
+  </view>
+</view>

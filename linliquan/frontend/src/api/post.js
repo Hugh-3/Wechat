@@ -20,10 +20,15 @@ function getNearby(lat, lng, radius, page, pageSize) {
   return get('/v1/posts/nearby', { lat, lng, radius, page, pageSize });
 }
 
+function getMyPosts(page, pageSize) {
+  return get('/v1/posts/my', { page, pageSize });
+}
+
 module.exports = {
   getList,
   getDetail,
   create,
   toggleLike,
-  getNearby
+  getNearby,
+  getMyPosts
 };

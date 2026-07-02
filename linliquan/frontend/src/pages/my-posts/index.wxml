@@ -1,0 +1,59 @@
+<!-- pages/my-posts/index.wxml -->
+<!-- 我的发布页面 -->
+
+<view class="container">
+  <!-- 顶部 Tab 栏 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="onTabChange" data-type="all">
+      全部
+    </view>
+    <view class="tab-item {{activeTab === 'info' ? 'active' : ''}}" bindtap="onTabChange" data-type="info">
+      信息广场
+    </view>
+    <view class="tab-item {{activeTab === 'help' ? 'active' : ''}}" bindtap="onTabChange" data-type="help">
+      邻里互助
+    </view>
+  </view>
+
+  <!-- 帖子列表 -->
+  <view class="post-list">
+    <block wx:for="{{displayPosts}}" wx:key="id">
+      <view class="post-card" bindtap="onPostTap" data-id="{{item.id}}">
+        <!-- 标题 -->
+        <text class="post-title">{{item.title}}</text>
+        <!-- 内容摘要 -->
+        <text class="post-summary">{{item.content}}</text>
+        <!-- 底部信息：发布时间、点赞数、评论数 -->
+        <view class="post-footer">
+          <text class="post-time">{{item.timeText}}</text>
+          <view class="post-stats">
+            <view class="stat-item">
+              <text class="stat-icon">❤️</text>
+              <text class="stat-text">{{item.likeCount || 0}}</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-icon">💬</text>
+              <text class="stat-text">{{item.commentCount || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && displayPosts.length > 0 && !loading}}">
+      <text>没有更多了</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{displayPosts.length === 0 && !loading}}">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">还没有发布过内容</text>
+    </view>
+  </view>
+</view>

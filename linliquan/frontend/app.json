@@ -9,7 +9,10 @@
     "pages/order-detail/index",
     "pages/notifications/index",
     "pages/points/index",
-    "pages/review/index"
+    "pages/review/index",
+    "pages/my-posts/index",
+    "pages/my-orders/index",
+    "pages/settings/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

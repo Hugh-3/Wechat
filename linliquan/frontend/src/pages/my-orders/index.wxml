@@ -1,0 +1,60 @@
+<!-- pages/my-orders/index.wxml -->
+<!-- 我的互助页面 -->
+
+<view class="container">
+  <!-- 顶部 Tab 栏 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      bindtap="onTabChange"
+      data-key="{{item.key}}"
+    >
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- 互助任务列表 -->
+  <view class="order-list">
+    <block wx:for="{{orders}}" wx:key="id">
+      <view class="order-card" bindtap="onOrderTap" data-id="{{item.id}}">
+        <!-- 顶部：标题 + 状态标签 -->
+        <view class="order-header">
+          <text class="order-title">{{item.title}}</text>
+          <text class="status-tag" style="color: {{item.statusColor}}; background: {{item.statusColor}}1a;">
+            {{item.statusText}}
+          </text>
+        </view>
+
+        <!-- 中部：类型标签 -->
+        <view class="order-tags">
+          <text class="type-tag">{{item.helpTypeName}}</text>
+        </view>
+
+        <!-- 底部：酬金 + 发布时间 -->
+        <view class="order-footer">
+          <text class="reward" wx:if="{{item.rewardAmount > 0}}">
+            酬劳 ¥{{item.rewardAmount}}
+          </text>
+          <text class="reward empty" wx:else>面议</text>
+          <text class="time">{{item.timeText}}</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{orders.length === 0 && !loading}}">
+      <text class="empty-icon">🤝</text>
+      <text class="empty-text">还没有互助记录</text>
+    </view>
+
+    <!-- 底部加载提示 -->
+    <view class="load-more" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="load-more" wx:if="{{!hasMore && orders.length > 0 && !loading}}">
+      <text>没有更多了</text>
+    </view>
+  </view>
+</view>

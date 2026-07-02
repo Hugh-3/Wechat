@@ -358,6 +358,25 @@ function handleMock(url, method, data) {
     };
   }
 
+  if (url.match(/^\/v1\/posts\/my/) && method === 'GET') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
+    }
+    const myPosts = mockPosts.filter(p => p.userId === 999 || p.userId === 100);
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: myPosts,
+        total: myPosts.length,
+        page: 1,
+        pageSize: 10
+      }
+    };
+  }
+
   if (url.match(/^\/v1\/posts\/nearby/) && method === 'GET') {
     const helperPosts = mockPosts.filter(p => p.postType === 2 || p.helpType);
     return {
@@ -468,6 +487,40 @@ function handleMock(url, method, data) {
       return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
     }
     return { success: true, code: 200, message: '操作成功' };
+  }
+
+  if (url.match(/^\/v1\/orders\/my/) && method === 'GET') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
+    }
+    const myOrders = mockPosts.filter(p => p.postType === 2).map(p => ({
+      id: p.id,
+      postId: p.id,
+      userId: p.userId,
+      userName: p.userName,
+      userAvatar: p.userAvatar,
+      helpType: p.helpType || 1,
+      helpTypeName: ['', '拼单团购', '代取代买', '生活求助', '技能交换'][p.helpType || 1],
+      rewardAmount: p.rewardAmount || 0,
+      status: 1,
+      statusText: '待接单',
+      title: p.title,
+      content: p.content,
+      createdAt: p.createdAt,
+      isOwner: true
+    }));
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: myOrders,
+        total: myOrders.length,
+        page: 1,
+        pageSize: 10
+      }
+    };
   }
 
   if (url.match(/^\/v1\/orders\/nearby/) && method === 'GET') {

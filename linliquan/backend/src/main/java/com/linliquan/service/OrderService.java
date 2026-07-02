@@ -339,6 +339,122 @@ public class OrderService {
     }
 
     /**
+     * 获取互助任务详情
+     */
+    @SuppressWarnings("unchecked")
+    public Result<Map<String, Object>> getOrderDetail(Long orderId, Long userId) {
+        String sql = """
+            SELECT
+                o.id, o.post_id, o.user_id, o.helper_user_id,
+                o.help_type, o.reward_amount, o.status,
+                o.created_at, o.updated_at,
+                p.title, p.content, p.images,
+                u.nickname as user_name, u.avatar_url as user_avatar,
+                h.nickname as helper_name
+            FROM orders o
+            INNER JOIN posts p ON o.post_id = p.id
+            INNER JOIN users u ON o.user_id = u.id
+            LEFT JOIN users h ON o.helper_user_id = h.id
+            WHERE o.id = :orderId
+            """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("orderId", orderId);
+
+        List<Object[]> rows = query.getResultList();
+        if (rows.isEmpty()) {
+            return Result.fail(ResultCode.NOT_FOUND);
+        }
+
+        Object[] row = rows.get(0);
+        Map<String, Object> order = new HashMap<>();
+        order.put("id", ((Number) row[0]).longValue());
+        order.put("postId", row[1] != null ? ((Number) row[1]).longValue() : null);
+        order.put("userId", ((Number) row[2]).longValue());
+        order.put("helperUserId", row[3] != null ? ((Number) row[3]).longValue() : null);
+        order.put("helpType", ((Number) row[4]).intValue());
+        order.put("rewardAmount", row[5] != null ? new BigDecimal(row[5].toString()) : BigDecimal.ZERO);
+        order.put("status", ((Number) row[6]).intValue());
+        order.put("createdAt", row[7]);
+        order.put("updatedAt", row[8]);
+        order.put("title", row[9]);
+        order.put("content", row[10]);
+        order.put("images", row[11]);
+        order.put("userName", row[12]);
+        order.put("userAvatar", row[13]);
+        order.put("helperName", row[14]);
+
+        return Result.success(order);
+    }
+
+    /**
+     * 获取用户参与的互助任务列表
+     * @param userId 用户ID
+     * @param role 角色：published-我发布的，helped-我帮助的，all-全部
+     */
+    @SuppressWarnings("unchecked")
+    public Result<Map<String, Object>> getMyOrders(Long userId, String role, Integer page, Integer pageSize) {
+        StringBuilder sqlBuilder = new StringBuilder("""
+            SELECT
+                o.id, o.post_id, o.user_id, o.helper_user_id,
+                o.help_type, o.reward_amount, o.status,
+                o.created_at, o.updated_at,
+                p.title, p.content,
+                u.nickname as user_name, u.avatar_url as user_avatar,
+                h.nickname as helper_name
+            FROM orders o
+            INNER JOIN posts p ON o.post_id = p.id
+            INNER JOIN users u ON o.user_id = u.id
+            LEFT JOIN users h ON o.helper_user_id = h.id
+            WHERE 1=1
+            """);
+
+        if ("published".equals(role)) {
+            sqlBuilder.append(" AND o.user_id = :userId");
+        } else if ("helped".equals(role)) {
+            sqlBuilder.append(" AND o.helper_user_id = :userId");
+        } else {
+            sqlBuilder.append(" AND (o.user_id = :userId OR o.helper_user_id = :userId)");
+        }
+
+        sqlBuilder.append(" ORDER BY o.created_at DESC LIMIT :limit OFFSET :offset");
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        query.setParameter("userId", userId);
+        query.setParameter("limit", pageSize);
+        query.setParameter("offset", (page - 1) * pageSize);
+
+        List<Object[]> rows = query.getResultList();
+        List<Map<String, Object>> orders = new ArrayList<>();
+        for (Object[] row : rows) {
+            Map<String, Object> order = new HashMap<>();
+            order.put("id", ((Number) row[0]).longValue());
+            order.put("postId", row[1] != null ? ((Number) row[1]).longValue() : null);
+            order.put("userId", ((Number) row[2]).longValue());
+            order.put("helperUserId", row[3] != null ? ((Number) row[3]).longValue() : null);
+            order.put("helpType", ((Number) row[4]).intValue());
+            order.put("rewardAmount", row[5] != null ? new BigDecimal(row[5].toString()) : BigDecimal.ZERO);
+            order.put("status", ((Number) row[6]).intValue());
+            order.put("createdAt", row[7]);
+            order.put("updatedAt", row[8]);
+            order.put("title", row[9]);
+            order.put("content", row[10]);
+            order.put("userName", row[11]);
+            order.put("userAvatar", row[12]);
+            order.put("helperName", row[13]);
+            orders.add(order);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", orders);
+        result.put("total", orders.size());
+        result.put("page", page);
+        result.put("pageSize", pageSize);
+
+        return Result.success(result);
+    }
+
+    /**
      * 截断字符串，超长部分以省略号表示
      */
     private String truncate(String text, int maxLen) {

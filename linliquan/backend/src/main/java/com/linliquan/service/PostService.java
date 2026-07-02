@@ -268,6 +268,23 @@ public class PostService {
     }
 
     /**
+     * 获取用户发布的帖子列表（分页）
+     */
+    public Result<Map<String, Object>> getMyPosts(Long userId, Integer page, Integer pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Post> postPage = postRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, 1, pageable);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", postPage.getContent());
+        result.put("total", postPage.getTotalElements());
+        result.put("page", page);
+        result.put("pageSize", pageSize);
+        result.put("totalPages", postPage.getTotalPages());
+
+        return Result.success(result);
+    }
+
+    /**
      * 检查用户是否已点赞
      */
     public boolean checkLiked(Long postId, Long userId) {
