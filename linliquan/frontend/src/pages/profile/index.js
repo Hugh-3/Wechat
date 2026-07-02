@@ -3,6 +3,7 @@
 
 const { getCurrentUserStatus, getStatusConfig } = require('../../utils/auth');
 const authApi = require('../../api/auth');
+const userApi = require('../../api/user');
 
 Page({
   data: {
@@ -65,13 +66,30 @@ Page({
       userInfo: {
         nickname: '邻里用户',
         avatar: '/assets/default-avatar.png'
-      },
-      stats: {
-        postCount: status === 2 ? 3 : 0,
-        likeCount: status === 2 ? 28 : 0,
-        commentCount: status === 2 ? 12 : 0
       }
     });
+
+    // 认证用户加载真实统计数据
+    if (status === 2) {
+      this.loadStats();
+    }
+  },
+
+  async loadStats() {
+    try {
+      const res = await userApi.getMyStats();
+      if (res.success && res.data) {
+        this.setData({
+          stats: {
+            postCount: res.data.postCount || 0,
+            likeCount: res.data.likeCount || 0,
+            commentCount: res.data.commentCount || 0
+          }
+        });
+      }
+    } catch (err) {
+      console.error('加载统计数据失败', err);
+    }
   },
 
   onEditProfile() {
@@ -99,15 +117,19 @@ Page({
   },
 
   goToMyFavorites() {
-    wx.showToast({ title: '收藏功能开发中', icon: 'none' });
+    if (!this.data.isVerified) {
+      wx.showToast({ title: '认证后可查看', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({ url: '/pages/favorites/index' });
   },
 
   goToMyLikes() {
-    wx.showToast({ title: '获赞记录功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/likes/index' });
   },
 
   goToMyComments() {
-    wx.showToast({ title: '评论记录功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/comments/index' });
   },
 
   goToSettings() {
@@ -126,7 +148,7 @@ Page({
   goToAbout() {
     wx.showModal({
       title: '关于邻里圈',
-      content: '邻里圈 v1.0.0\n\n让邻里更亲近，让生活更美好\n\n© 2026 邻里圈团队',
+      content: '邻里圈 v1.2.0\n\n让邻里更亲近，让生活更美好\n\n© 2026 邻里圈团队',
       showCancel: false
     });
   },

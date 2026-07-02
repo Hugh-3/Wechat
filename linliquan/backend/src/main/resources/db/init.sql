@@ -134,6 +134,20 @@ CREATE INDEX idx_comment_likes_comment_id ON comment_likes(comment_id);
 CREATE INDEX idx_comment_likes_user_id ON comment_likes(user_id);
 
 -- ==========================================
+-- favorites表（帖子收藏记录表）
+-- ==========================================
+CREATE TABLE favorites (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(post_id, user_id)
+);
+
+CREATE INDEX idx_favorites_post_id ON favorites(post_id);
+CREATE INDEX idx_favorites_user_id ON favorites(user_id);
+
+-- ==========================================
 -- operation_logs表（等保要求：操作日志留存180天）
 -- ==========================================
 CREATE TABLE operation_logs (

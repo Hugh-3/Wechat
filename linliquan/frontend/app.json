@@ -12,7 +12,10 @@
     "pages/review/index",
     "pages/my-posts/index",
     "pages/my-orders/index",
-    "pages/settings/index"
+    "pages/settings/index",
+    "pages/favorites/index",
+    "pages/likes/index",
+    "pages/comments/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

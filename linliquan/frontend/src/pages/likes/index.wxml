@@ -1,0 +1,38 @@
+<!-- pages/likes/index.wxml -->
+<!-- 获赞记录页面 -->
+
+<view class="container">
+  <!-- 顶部统计卡片 -->
+  <view class="stats-card">
+    <text class="stats-label">累计获赞</text>
+    <text class="stats-value">{{totalLikes}}</text>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="record-list">
+    <view class="record-card" wx:for="{{records}}" wx:key="id">
+      <!-- 点赞人头像 -->
+      <image class="record-avatar" src="{{item.likerAvatar}}" mode="aspectFill" />
+      <!-- 记录信息 -->
+      <view class="record-info">
+        <view class="record-header">
+          <text class="record-name">{{item.likerNickname}}</text>
+          <text class="record-action">赞了你的帖子</text>
+        </view>
+        <text class="record-post">{{item.postTitle}}</text>
+        <text class="record-time">{{item.timeText}}</text>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{records.length === 0 && !loading}}">
+      <text class="empty-icon">❤️</text>
+      <text class="empty-text">还没有获赞记录</text>
+    </view>
+  </view>
+</view>

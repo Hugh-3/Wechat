@@ -1,0 +1,62 @@
+<!-- pages/favorites/index.wxml -->
+<!-- 我的收藏页面 -->
+
+<view class="container">
+  <!-- 帖子列表 -->
+  <view class="post-list">
+    <block wx:for="{{posts}}" wx:key="id">
+      <view class="post-item-wrapper">
+        <!-- 帖子卡片，左滑显示删除按钮 -->
+        <view
+          class="post-card"
+          style="transform: translateX({{item.slideOffset}}rpx)"
+          bindtap="onPostTap"
+          data-id="{{item.postId || item.id}}"
+          bindtouchstart="onTouchStart"
+          bindtouchmove="onTouchMove"
+          bindtouchend="onTouchEnd"
+          data-index="{{index}}"
+        >
+          <!-- 标题 -->
+          <text class="post-title">{{item.title}}</text>
+          <!-- 内容摘要 -->
+          <text class="post-summary">{{item.content}}</text>
+          <!-- 底部信息：收藏时间、点赞数、评论数 -->
+          <view class="post-footer">
+            <text class="post-time">{{item.timeText}}</text>
+            <view class="post-stats">
+              <view class="stat-item">
+                <text class="stat-icon">❤️</text>
+                <text class="stat-text">{{item.likeCount || 0}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">💬</text>
+                <text class="stat-text">{{item.commentCount || 0}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <!-- 删除按钮 -->
+        <view class="delete-btn" catchtap="onDelete" data-index="{{index}}">
+          <text>取消收藏</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && posts.length > 0 && !loading}}">
+      <text>没有更多了</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{posts.length === 0 && !loading}}">
+      <text class="empty-icon">⭐</text>
+      <text class="empty-text">还没有收藏的内容</text>
+    </view>
+  </view>
+</view>

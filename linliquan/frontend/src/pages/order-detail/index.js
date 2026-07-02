@@ -136,7 +136,33 @@ Page({
       this.showAuthModal();
       return;
     }
-    wx.showToast({ title: '联系功能开发中', icon: 'none' });
+
+    const order = this.data.order || {};
+    // 使用微信小程序客服会话进行联系
+    wx.showActionSheet({
+      itemList: ['在线客服咨询', '拨打客服电话'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          // 打开客服会话（需要在小程序后台配置客服）
+          wx.openCustomerServiceConversation({
+            extInfo: { url: '' },
+            showMessageCard: true,
+            sendMessageTitle: order.title || '邻里互助咨询',
+            fail: () => {
+              wx.showToast({ title: '客服暂时不可用，请稍后再试', icon: 'none' });
+            }
+          });
+        } else if (res.tapIndex === 1) {
+          // 拨打客服电话
+          wx.makePhoneCall({
+            phoneNumber: '400-888-0000',
+            fail: () => {
+              wx.showToast({ title: '拨号取消', icon: 'none' });
+            }
+          });
+        }
+      }
+    });
   },
 
   previewImage(e) {

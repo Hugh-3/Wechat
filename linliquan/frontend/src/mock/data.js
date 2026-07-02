@@ -610,6 +610,52 @@ function handleMock(url, method, data) {
     return { success: false, code: 404, message: '订单不存在' };
   }
 
+  // 收藏/取消收藏
+  if (url.match(/^\/v1\/favorites\/(\d+)$/) && method === 'POST') {
+    const postId = parseInt(url.match(/^\/v1\/favorites\/(\d+)$/)[1]);
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: { favorited: data.favorited, favoriteCount: Math.floor(Math.random() * 50) + 1 }
+    };
+  }
+
+  // 我的收藏列表
+  if (url.match(/^\/v1\/favorites\/my/) && method === 'GET') {
+    const status = getCurrentUserStatus();
+    if (status !== 2) {
+      return { success: false, code: 40301, message: '仅认证业主可进行此操作' };
+    }
+    // 返回前3条帖子作为收藏
+    const favPosts = mockPosts.slice(0, 3).map(p => ({
+      ...p,
+      favoritedAt: '2026-07-02 09:00'
+    }));
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: { list: favPosts, total: favPosts.length, page: 1, pageSize: 10 }
+    };
+  }
+
+  // 用户统计数据
+  if (url.match(/^\/v1\/users\/stats/) && method === 'GET') {
+    return {
+      success: true,
+      code: 200,
+      message: '操作成功',
+      data: {
+        postCount: 8,
+        likeCount: 56,
+        commentCount: 23,
+        favoriteCount: 5,
+        orderCount: 4
+      }
+    };
+  }
+
   return {
     success: false,
     code: 404,

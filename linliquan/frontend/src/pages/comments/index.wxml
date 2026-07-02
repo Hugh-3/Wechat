@@ -1,0 +1,36 @@
+<!-- pages/comments/index.wxml -->
+<!-- 评论记录页面 -->
+
+<view class="container">
+  <!-- 顶部统计卡片 -->
+  <view class="stats-card">
+    <text class="stats-label">累计评论</text>
+    <text class="stats-value">{{totalComments}}</text>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="record-list">
+    <view class="record-card" wx:for="{{records}}" wx:key="id">
+      <!-- 帖子标题 -->
+      <text class="record-post">{{item.postTitle}}</text>
+      <!-- 评论内容 -->
+      <view class="record-content-wrapper">
+        <text class="record-quote">我的评论：</text>
+        <text class="record-content">{{item.content}}</text>
+      </view>
+      <!-- 评论时间 -->
+      <text class="record-time">{{item.timeText}}</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{records.length === 0 && !loading}}">
+      <text class="empty-icon">💬</text>
+      <text class="empty-text">还没有评论记录</text>
+    </view>
+  </view>
+</view>
