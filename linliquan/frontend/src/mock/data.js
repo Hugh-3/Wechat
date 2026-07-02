@@ -656,6 +656,58 @@ function handleMock(url, method, data) {
     };
   }
 
+  // 更新用户资料
+  if (url.match(/^\/v1\/users\/profile/) && method === 'PUT') {
+    return {
+      success: true,
+      code: 200,
+      message: '更新成功',
+      data: {
+        id: 999,
+        nickname: data.nickname || '邻里用户',
+        avatarUrl: data.avatarUrl || '/assets/default-avatar.png'
+      }
+    };
+  }
+
+  // 获赞记录
+  if (url.match(/^\/v1\/users\/likes/) && method === 'GET') {
+    const records = [
+      { id: 1, postId: 1, likerName: '赵叔叔', likerAvatar: '/assets/default-avatar.png', title: '小区门口水果店上新啦', content: '今天路过发现...', createdAt: '2026-07-02 10:00' },
+      { id: 2, postId: 1, likerName: '刘阿姨', likerAvatar: '/assets/default-avatar.png', title: '小区门口水果店上新啦', content: '今天路过发现...', createdAt: '2026-07-02 09:30' },
+      { id: 3, postId: 3, likerName: '孙大爷', likerAvatar: '/assets/default-avatar.png', title: '3号楼快递代取', content: '帮忙代取快递...', createdAt: '2026-07-01 18:00' }
+    ];
+    return {
+      success: true, code: 200, message: '操作成功',
+      data: { list: records, total: records.length, page: 1, pageSize: 10 }
+    };
+  }
+
+  // 评论记录
+  if (url.match(/^\/v1\/users\/comments/) && method === 'GET') {
+    const records = [
+      { id: 1, postId: 1, postTitle: '小区门口水果店上新啦', content: '真的吗？下班我去看看', createdAt: '2026-07-01 11:00' },
+      { id: 2, postId: 5, postTitle: '社区健身房开放时间', content: '早上6点到晚上10点', createdAt: '2026-07-01 09:00' }
+    ];
+    return {
+      success: true, code: 200, message: '操作成功',
+      data: { list: records, total: records.length, page: 1, pageSize: 10 }
+    };
+  }
+
+  // 帖子搜索
+  if (url.match(/^\/v1\/posts\/search/) && method === 'GET') {
+    const keyword = (data && data.keyword) || '';
+    const results = mockPosts.filter(p =>
+      (p.title && p.title.indexOf(keyword) >= 0) ||
+      (p.content && p.content.indexOf(keyword) >= 0)
+    );
+    return {
+      success: true, code: 200, message: '操作成功',
+      data: { list: results, total: results.length, page: 1, pageSize: 10 }
+    };
+  }
+
   return {
     success: false,
     code: 404,

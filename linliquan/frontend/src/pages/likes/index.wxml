@@ -10,7 +10,7 @@
 
   <!-- 记录列表 -->
   <view class="record-list">
-    <view class="record-card" wx:for="{{records}}" wx:key="id">
+    <view class="record-card" wx:for="{{records}}" wx:key="id" bindtap="onRecordTap" data-post-id="{{item.postId}}">
       <!-- 点赞人头像 -->
       <image class="record-avatar" src="{{item.likerAvatar}}" mode="aspectFill" />
       <!-- 记录信息 -->

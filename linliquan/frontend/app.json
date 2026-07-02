@@ -15,7 +15,9 @@
     "pages/settings/index",
     "pages/favorites/index",
     "pages/likes/index",
-    "pages/comments/index"
+    "pages/comments/index",
+    "pages/edit-profile/index",
+    "pages/search/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

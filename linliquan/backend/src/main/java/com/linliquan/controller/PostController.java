@@ -48,6 +48,18 @@ public class PostController {
     }
 
     /**
+     * 【读操作】搜索帖子
+     */
+    @GetMapping("/search")
+    public Result<?> searchPosts(
+            @RequestParam String keyword,
+            @RequestParam(required = false) Integer type,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return postService.searchPosts(keyword, type, page, pageSize);
+    }
+
+    /**
      * 【读操作】获取附近互助任务
      * 三种状态均可访问
      */

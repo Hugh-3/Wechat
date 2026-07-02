@@ -22,7 +22,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -280,6 +282,78 @@ public class PostService {
         result.put("page", page);
         result.put("pageSize", pageSize);
         result.put("totalPages", postPage.getTotalPages());
+
+        return Result.success(result);
+    }
+
+    /**
+     * 搜索帖子
+     */
+    @SuppressWarnings("unchecked")
+    public Result<Map<String, Object>> searchPosts(String keyword, Integer type, Integer page, Integer pageSize) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT
+                p.id, p.user_id, p.post_type, p.title, p.content, p.images,
+                p.like_count, p.comment_count, p.view_count, p.status, p.created_at,
+                u.nickname as user_name, u.avatar_url as user_avatar
+            FROM posts p
+            INNER JOIN users u ON p.user_id = u.id
+            WHERE p.status = 1 AND (p.title ILIKE :keyword OR p.content ILIKE :keyword)
+            """);
+
+        if (type != null) {
+            sql.append(" AND p.post_type = :type");
+        }
+
+        sql.append(" ORDER BY p.created_at DESC LIMIT :limit OFFSET :offset");
+
+        Query query = entityManager.createNativeQuery(sql.toString());
+        query.setParameter("keyword", "%" + keyword + "%");
+        if (type != null) {
+            query.setParameter("type", type);
+        }
+        query.setParameter("limit", pageSize);
+        query.setParameter("offset", (page - 1) * pageSize);
+
+        List<Object[]> rows = query.getResultList();
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] row : rows) {
+            Map<String, Object> post = new HashMap<>();
+            post.put("id", ((Number) row[0]).longValue());
+            post.put("userId", ((Number) row[1]).longValue());
+            post.put("postType", ((Number) row[2]).intValue());
+            post.put("title", row[3]);
+            post.put("content", row[4]);
+            post.put("images", row[5]);
+            post.put("likeCount", row[6] != null ? ((Number) row[6]).intValue() : 0);
+            post.put("commentCount", row[7] != null ? ((Number) row[7]).intValue() : 0);
+            post.put("viewCount", row[8] != null ? ((Number) row[8]).intValue() : 0);
+            post.put("status", ((Number) row[9]).intValue());
+            post.put("createdAt", row[10]);
+            post.put("userName", row[11]);
+            post.put("userAvatar", row[12]);
+            list.add(post);
+        }
+
+        // 总数
+        StringBuilder countSql = new StringBuilder(
+            "SELECT COUNT(*) FROM posts WHERE status = 1 AND (title ILIKE :keyword OR content ILIKE :keyword)"
+        );
+        if (type != null) {
+            countSql.append(" AND post_type = :type");
+        }
+        Query countQuery = entityManager.createNativeQuery(countSql.toString());
+        countQuery.setParameter("keyword", "%" + keyword + "%");
+        if (type != null) {
+            countQuery.setParameter("type", type);
+        }
+        long total = ((Number) countQuery.getSingleResult()).longValue();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("total", total);
+        result.put("page", page);
+        result.put("pageSize", pageSize);
 
         return Result.success(result);
     }

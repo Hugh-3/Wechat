@@ -93,7 +93,7 @@ Page({
   },
 
   onEditProfile() {
-    wx.showToast({ title: '资料编辑功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/edit-profile/index' });
   },
 
   goToAuth() {
@@ -148,7 +148,7 @@ Page({
   goToAbout() {
     wx.showModal({
       title: '关于邻里圈',
-      content: '邻里圈 v1.2.0\n\n让邻里更亲近，让生活更美好\n\n© 2026 邻里圈团队',
+      content: '邻里圈 v1.3.0\n\n让邻里更亲近，让生活更美好\n\n© 2026 邻里圈团队',
       showCancel: false
     });
   },

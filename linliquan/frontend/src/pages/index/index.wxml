@@ -19,7 +19,7 @@
     <button size="mini" bindtap="switchStatus">切换状态</button>
   </view>
 
-  <!-- 分类Tab -->
+  <!-- 分类Tab + 搜索入口 -->
   <view class="tab-bar">
     <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="onTabChange" data-type="all">
       全部
@@ -29,6 +29,9 @@
     </view>
     <view class="tab-item {{activeTab === 'help' ? 'active' : ''}}" bindtap="onTabChange" data-type="help">
       邻里互助
+    </view>
+    <view class="search-entry" bindtap="onSearchTap">
+      <text class="search-icon">🔍</text>
     </view>
   </view>
 

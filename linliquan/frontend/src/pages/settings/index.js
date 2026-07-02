@@ -12,7 +12,7 @@ Page({
     cacheSize: '0 KB',
     currentEnv: 'mock',
     envList: [],
-    version: 'v1.2.0'
+    version: 'v1.3.0'
   },
 
   onLoad() {

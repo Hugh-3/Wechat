@@ -16,7 +16,8 @@ Page({
     loading: true,
     submitting: false,
     canComment: false,
-    userStatus: 0
+    userStatus: 0,
+    replyTo: null  // 回复目标 { id, name, userId }
   },
 
   onLoad(options) {
@@ -93,22 +94,32 @@ Page({
     this.setData({ submitting: true });
 
     try {
-      const res = await commentApi.create(this.data.postId, content);
+      const replyTo = this.data.replyTo;
+      const res = await commentApi.create(
+        this.data.postId,
+        content,
+        replyTo ? replyTo.id : null,
+        replyTo ? replyTo.userId : null
+      );
       const newComment = res.data || {};
       newComment.timeText = formatRelativeTime(newComment.createdAt);
       newComment.liked = false;
+      if (replyTo) {
+        newComment.replyToUserName = replyTo.name;
+      }
 
       this.setData({
         comments: [newComment, ...this.data.comments],
         commentCount: this.data.commentCount + 1,
         commentText: '',
+        replyTo: null,
         post: {
           ...this.data.post,
           commentCount: (this.data.post.commentCount || 0) + 1
         }
       });
 
-      wx.showToast({ title: '评论成功', icon: 'success' });
+      wx.showToast({ title: replyTo ? '回复成功' : '评论成功', icon: 'success' });
     } catch (err) {
       console.error('评论失败', err);
       wx.showToast({ title: err.message || '评论失败', icon: 'none' });
@@ -184,11 +195,15 @@ Page({
       this.showAuthModal();
       return;
     }
-    const name = e.currentTarget.dataset.name;
-    wx.showToast({
-      title: `回复 ${name}`,
-      icon: 'none'
+    const { id, name, userid } = e.currentTarget.dataset;
+    this.setData({
+      replyTo: { id: id, name: name, userId: userid }
     });
+  },
+
+  // 取消回复
+  onCancelReply() {
+    this.setData({ replyTo: null });
   },
 
   previewImage(e) {

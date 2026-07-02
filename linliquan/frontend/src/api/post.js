@@ -24,11 +24,16 @@ function getMyPosts(page, pageSize) {
   return get('/v1/posts/my', { page, pageSize });
 }
 
+function search(keyword, type, page, pageSize) {
+  return get('/v1/posts/search', { keyword, type, page, pageSize });
+}
+
 module.exports = {
   getList,
   getDetail,
   create,
   toggleLike,
   getNearby,
-  getMyPosts
+  getMyPosts,
+  search
 };

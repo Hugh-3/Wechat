@@ -4,44 +4,13 @@
 const userApi = require('../../api/user');
 const { formatRelativeTime } = require('../../utils/time');
 
-// 模拟评论记录数据（后端尚未提供单独的评论记录接口）
-const MOCK_COMMENT_RECORDS = [
-  {
-    id: 1,
-    postTitle: '小区南门新开的早餐店推荐',
-    content: '去尝过了，味道确实不错，价格也实惠！',
-    commentedAt: Date.now() - 1 * 60 * 60 * 1000
-  },
-  {
-    id: 2,
-    postTitle: '关于停车位分配的一点建议',
-    content: '支持楼主的建议，希望物业能够采纳。',
-    commentedAt: Date.now() - 5 * 60 * 60 * 1000
-  },
-  {
-    id: 3,
-    postTitle: '周末组织小区亲子活动',
-    content: '报名+1，请问需要自带什么物品吗？',
-    commentedAt: Date.now() - 1 * 24 * 60 * 60 * 1000
-  },
-  {
-    id: 4,
-    postTitle: '邻里互助：帮忙代收快递',
-    content: '太感谢了，已经帮忙取回了，邻里之间就该互相帮助。',
-    commentedAt: Date.now() - 3 * 24 * 60 * 60 * 1000
-  },
-  {
-    id: 5,
-    postTitle: '小区绿化建议征集',
-    content: '建议在凉亭附近多种一些遮阴的树木。',
-    commentedAt: Date.now() - 6 * 24 * 60 * 60 * 1000
-  }
-];
-
 Page({
   data: {
     totalComments: 0,  // 总评论数
     records: [],       // 评论记录列表
+    page: 1,
+    pageSize: 10,
+    hasMore: true,
     loading: false
   },
 
@@ -52,6 +21,7 @@ Page({
 
   // 下拉刷新
   onPullDownRefresh() {
+    this.setData({ page: 1, hasMore: true });
     Promise.all([
       this.loadStats(),
       this.loadRecords()
@@ -60,28 +30,56 @@ Page({
     });
   },
 
+  // 上拉加载更多
+  onReachBottom() {
+    if (!this.data.hasMore || this.data.loading) return;
+    this.setData({ page: this.data.page + 1 });
+    this.loadRecords();
+  },
+
+  // 点击记录跳转帖子详情
+  onRecordTap(e) {
+    const postId = e.currentTarget.dataset.postId;
+    if (!postId) return;
+    wx.navigateTo({
+      url: `/pages/post-detail/index?id=${postId}`
+    });
+  },
+
   // 加载评论总数
   async loadStats() {
     try {
       const res = await userApi.getMyStats();
       const data = res.data || {};
-      this.setData({ totalComments: data.commentCount || data.totalComments || 0 });
+      this.setData({
+        totalComments: data.commentCount != null ? data.commentCount : (data.totalComments || 0)
+      });
     } catch (err) {
       console.error('加载评论统计失败', err);
     }
   },
 
-  // 加载评论记录（暂用模拟数据，后端接口就绪后替换）
+  // 加载评论记录
   async loadRecords() {
     this.setData({ loading: true });
     try {
-      // 模拟网络请求延迟
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const records = MOCK_COMMENT_RECORDS.map(item => ({
-        ...item,
-        timeText: formatRelativeTime(item.commentedAt)
+      const { page, pageSize } = this.data;
+      const res = await userApi.getMyComments(page, pageSize);
+      const data = res.data || {};
+      const list = data.list || [];
+      // 映射接口字段到 wxml 绑定字段
+      const records = list.map(item => ({
+        id: item.postId,
+        postId: item.postId,
+        postTitle: item.postTitle,
+        content: item.content,
+        timeText: formatRelativeTime(item.createdAt)
       }));
-      this.setData({ records });
+      this.setData({
+        records: page === 1 ? records : this.data.records.concat(records),
+        hasMore: list.length >= pageSize,
+        totalComments: data.total != null ? data.total : this.data.totalComments
+      });
     } catch (err) {
       console.error('加载评论记录失败', err);
     } finally {

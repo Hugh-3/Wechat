@@ -10,7 +10,7 @@
 
   <!-- 记录列表 -->
   <view class="record-list">
-    <view class="record-card" wx:for="{{records}}" wx:key="id">
+    <view class="record-card" wx:for="{{records}}" wx:key="id" bindtap="onRecordTap" data-post-id="{{item.postId}}">
       <!-- 帖子标题 -->
       <text class="record-post">{{item.postTitle}}</text>
       <!-- 评论内容 -->

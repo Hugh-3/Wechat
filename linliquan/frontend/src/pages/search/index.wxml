@@ -1,0 +1,94 @@
+<!-- pages/search/index.wxml -->
+<!-- 搜索页面 -->
+
+<view class="container">
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        type="text"
+        value="{{keyword}}"
+        placeholder="搜索帖子"
+        confirm-type="search"
+        bindinput="onKeywordInput"
+        bindconfirm="onConfirmSearch" />
+    </view>
+    <view class="search-btn" bindtap="onSearchTap">搜索</view>
+  </view>
+
+  <!-- Tab 栏（搜索后显示） -->
+  <view class="tab-bar" wx:if="{{hasSearched}}">
+    <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="onTabChange" data-key="all">
+      全部
+    </view>
+    <view class="tab-item {{activeTab === 'info' ? 'active' : ''}}" bindtap="onTabChange" data-key="info">
+      信息广场
+    </view>
+    <view class="tab-item {{activeTab === 'help' ? 'active' : ''}}" bindtap="onTabChange" data-key="help">
+      邻里互助
+    </view>
+  </view>
+
+  <!-- 搜索历史区域（未搜索时显示） -->
+  <view class="history-section" wx:if="{{!hasSearched}}">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <view class="history-clear" wx:if="{{searchHistory.length > 0}}" bindtap="onClearHistory">
+        <text class="clear-icon">🗑</text>
+        <text class="clear-text">清空</text>
+      </view>
+    </view>
+    <view class="history-list" wx:if="{{searchHistory.length > 0}}">
+      <view class="history-tag" wx:for="{{searchHistory}}" wx:key="*this" bindtap="onHistoryTap" data-word="{{item}}">
+        {{item}}
+      </view>
+    </view>
+    <view class="history-empty" wx:else>
+      <text>暂无搜索历史</text>
+    </view>
+  </view>
+
+  <!-- 搜索结果列表 -->
+  <view class="result-list" wx:if="{{hasSearched}}">
+    <block wx:for="{{results}}" wx:key="id">
+      <view class="post-card" bindtap="onPostTap" data-id="{{item.id}}">
+        <!-- 标题 -->
+        <text class="post-title">{{item.title}}</text>
+        <!-- 内容摘要 -->
+        <text class="post-summary">{{item.content}}</text>
+        <!-- 底部信息：时间、点赞数、评论数 -->
+        <view class="post-footer">
+          <text class="post-time">{{item.timeText}}</text>
+          <view class="post-stats">
+            <view class="stat-item">
+              <text class="stat-icon">❤️</text>
+              <text class="stat-text">{{item.likeCount || 0}}</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-icon">💬</text>
+              <text class="stat-text">{{item.commentCount || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && results.length > 0 && !loading}}">
+      <text>没有更多了</text>
+    </view>
+
+    <!-- 空搜索结果提示 -->
+    <view class="empty" wx:if="{{results.length === 0 && !loading}}">
+      <text class="empty-icon">🔍</text>
+      <text class="empty-text">没有找到相关内容</text>
+    </view>
+  </view>
+</view>

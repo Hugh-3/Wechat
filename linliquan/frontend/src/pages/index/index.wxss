@@ -73,6 +73,18 @@
   font-weight: bold;
 }
 
+/* 搜索入口 */
+.search-entry {
+  width: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-icon {
+  font-size: 36rpx;
+}
+
 .tab-item.active::after {
   content: '';
   position: absolute;

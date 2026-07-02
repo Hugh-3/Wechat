@@ -62,7 +62,7 @@
                 <text>{{item.liked ? '❤️' : '🤍'}}</text>
                 <text wx:if="{{item.likeCount > 0}}">{{item.likeCount}}</text>
               </view>
-              <text class="reply-btn" catchtap="onReply" data-name="{{item.userName}}">回复</text>
+              <text class="reply-btn" catchtap="onReply" data-id="{{item.id}}" data-name="{{item.userName}}" data-userid="{{item.userId}}">回复</text>
             </view>
           </view>
         </view>
@@ -90,22 +90,29 @@
 
   <!-- 底部评论输入框 -->
   <view class="comment-input-bar">
-    <input 
-      class="comment-input" 
-      placeholder="{{canComment ? '说点什么...' : '认证业主即可发表评论'}}"
-      value="{{commentText}}"
-      bindinput="onCommentInput"
-      confirm-type="send"
-      bindconfirm="submitComment"
-      disabled="{{!canComment}}"
-    />
-    <button 
-      class="send-btn {{canComment && commentText ? 'active' : ''}}" 
-      bindtap="submitComment"
-      disabled="{{!canComment || !commentText || submitting}}"
-      loading="{{submitting}}"
-    >
-      发送
-    </button>
+    <!-- 回复提示条 -->
+    <view class="reply-bar" wx:if="{{replyTo}}">
+      <text class="reply-text">回复 {{replyTo.name}}</text>
+      <text class="reply-cancel" bindtap="onCancelReply">取消</text>
+    </view>
+    <view class="input-row">
+      <input
+        class="comment-input"
+        placeholder="{{replyTo ? '回复 ' + replyTo.name + '...' : (canComment ? '说点什么...' : '认证业主即可发表评论')}}"
+        value="{{commentText}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="submitComment"
+        disabled="{{!canComment}}"
+      />
+      <button
+        class="send-btn {{canComment && commentText ? 'active' : ''}}"
+        bindtap="submitComment"
+        disabled="{{!canComment || !commentText || submitting}}"
+        loading="{{submitting}}"
+      >
+        发送
+      </button>
+    </view>
   </view>
 </view>

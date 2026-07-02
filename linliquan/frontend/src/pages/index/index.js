@@ -48,6 +48,11 @@ Page({
     this.loadPosts();
   },
 
+  // 跳转到搜索页面
+  onSearchTap() {
+    wx.navigateTo({ url: '/pages/search/index' });
+  },
+
   async loadPosts() {
     if (this.data.loading || !this.data.hasMore) return;
 
